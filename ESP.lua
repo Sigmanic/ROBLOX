@@ -7,7 +7,7 @@ local ESP = {
     Color = Color3.fromRGB(255, 170, 0),
     FaceCamera = false,
     Names = false,
-    Distances = false
+    Distances = false,
     TeamColor = false,
     Thickness = 2,
     AttachShift = 1,
@@ -235,6 +235,7 @@ function boxBase:Update()
             self.Components.Distance.Color = color
             else
             self.Components.Distance.Visible = false
+            end
         else
             self.Components.Name.Visible = false
             self.Components.Distance.Visible = false
