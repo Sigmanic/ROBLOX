@@ -299,7 +299,7 @@ function ESP:Add(obj, options)
 		Color = box.Color,
 		Center = true,
 		Outline = true,
-		Fonts = Drawing.Fonts.Monospace,
+		--Fonts = Drawing.Fonts.Monospace,
         Size = 19,
         Visible = self.Enabled and self.Names
 	})
@@ -307,7 +307,7 @@ function ESP:Add(obj, options)
 		Color = box.Color,
 		Center = true,
 		Outline = true,
-		Fonts = Drawing.Fonts.Monospace,
+		--Fonts = Drawing.Fonts.Monospace,
         Size = 19,
         Visible = self.Enabled and self.Names
 	})
