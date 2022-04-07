@@ -1,4 +1,3 @@
-
 local comm1,comm2,comm3
 local troops = {1,2,3}
 local library = loadstring(game:HttpGet("https://pastebin.com/raw/RZ49zwxL", true))()
