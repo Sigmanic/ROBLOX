@@ -1,5 +1,6 @@
 local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
 local w = library:CreateWindow('Auto Chain Settings')
+w:Section('Choose The Version')
 w:Button("Single Chain",function()
 	for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
 		if v:IsA("Frame") and v.Name == "Auto Chain Settings" then
