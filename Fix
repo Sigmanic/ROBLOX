@@ -61,14 +61,14 @@ spawn(function()
 						if getgenv().Maps[mp.Value] ~= nil then
 							if (plrs.Value <= 0) then
 								jc = jc + 1
-								prints("Join attempt...")
+								print("Join attempt...")
 								getgenv().status = "Joining..."
 								RSRF:InvokeServer("Elevators","Enter",Elevators)
 								UnEquip()
 								for i,v in next, getgenv().Maps[mp.Value] do
 									EquipTroop(v)
 								end
-								prints("Joined elavator...")
+								print("Joined elavator...")
 								getgenv().status = "Joined"
 								while wait() do
 									getgenv().status = "Joined ("..Elevators.State.Timer.Value.."s)"
@@ -76,7 +76,7 @@ spawn(function()
 										local s = true
 										for c=1,100 do
 										if (plrs.Value > 1) then
-											prints("Someone joined, leaving elevator...")
+											print("Someone joined, leaving elevator...")
 											getgenv().status = "Someone joined..."
 											RSRF:InvokeServer("Elevators","Leave")
 											getgenv().repeating = true
@@ -113,9 +113,9 @@ spawn(function()
 														if (plrs.Value == 0) then
 															wait(1)
 															if (plrs.Value == 0) then
-                                                                prints("Error")
+                                                                print("Error")
                                                                 getgenv().status = "Error occured, check dev con"
-                                                                prints("Error occured, please open ticket on Money Maker Development discord server!")
+                                                                print("Error occured, please open ticket on Money Maker Development discord server!")
                                                                 RSRF:InvokeServer("Elevators","Leave")
                                                                 getgenv().repeating = true
                                                                 break
@@ -127,7 +127,7 @@ spawn(function()
 										end
 									else
 										RSRF:InvokeServer("Elevators","Leave")
-										prints("Map changed while joining, leaving...")
+										print("Map changed while joining, leaving...")
 										getgenv().status = "Map changed..."
 										getgenv().repeating = true
 										break
@@ -138,7 +138,7 @@ spawn(function()
 					end
 					if jc == 0 then
 						getgenv().repeating = true
-						prints("Waiting for map...")
+						print("Waiting for map...")
 						getgenv().status = "Waiting for map..."
 						if getgenv().timer >= 15 then
                             getgenv().status = "Force changing maps..."
@@ -161,7 +161,7 @@ spawn(function()
 	    end)
     end
 end)
-
+--Fixed Version
 
 
 
