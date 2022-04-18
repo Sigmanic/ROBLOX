@@ -94,7 +94,7 @@ spawn(function()
                                         end
                                     end
                                     if getgenv().Maps[Name.Value] ~= nil then --This Progress Will Leave Elevator If A Player is Joining In
-                                        if antimulti then
+                                        if getgenv().AntiMulti then
                                             if (plrs.Value > 1) then
                                                 RSRF:InvokeServer("Elevators","Leave")
                                                 prints("Someone joined, leaving elevator...")
