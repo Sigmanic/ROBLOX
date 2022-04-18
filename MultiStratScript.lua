@@ -1,15 +1,3 @@
-local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
-local w = library:CreateWindow('Elavator')
-w:Section('Status:')
-w:Section('Status')
-for i,v in pairs(game.CoreGui:GetDescendants()) do
-    if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Status" then
-        getgenv().status = v
-    end
-end
-getgenv().Maps = {["Wrecked Battlefield"] = {"Ace Pilot", "Military Base", "nil", "nil", "nil"},
-["Autumn Falling"] = {"Ace Pilot", "Military Base", "nil", "nil", "nil"}}
-getgenv().Mode = "Hardcore"
 spawn(function()
 	function prints(mess)
 		appendfile("TDS_AutoStrat/LastPrintLog.txt",tostring(mess).."\n")
