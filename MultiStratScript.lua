@@ -1,8 +1,8 @@
 spawn(function()
-	function prints(mess)
-		appendfile("TDS_AutoStrat/LastPrintLog.txt",tostring(mess).."\n")
-		print(tostring(mess))
-	end
+    function prints(mess)
+        appendfile("TDS_AutoStrat/LastPrintLog.txt",tostring(mess).."\n")
+        print(tostring(mess))
+    end
     local RS = game:WaitForChild('ReplicatedStorage')
     local RSRF = RS:WaitForChild("RemoteFunction")
     local RSRE = RS:WaitForChild("RemoteEvent")
@@ -40,38 +40,38 @@ spawn(function()
         getgenv().map = game:GetService("ReplicatedStorage").State.Map.Value
     else
         spawn(function()
-			getgenv().timer = 0
-			while wait(1) do
-				getgenv().timer = getgenv().timer + 1
-			end
-		end)
+            getgenv().timer = 0
+            while wait(1) do
+                getgenv().timer = getgenv().timer + 1
+            end
+        end)
         getgenv().repeating = true
-		spawn(function()
-			while wait(1) do
-				if getgenv().repeating then
-					getgenv().repeating = false
-					local jc = true --Wait Mode
-					for _, Elevators in pairs(game:GetService('Workspace').Elevators:GetChildren()) do
-						local Name = Elevators.State.Map.Title
-						local plrs = Elevators.State.Players
+        spawn(function()
+            while wait(1) do
+                if getgenv().repeating then
+                    getgenv().repeating = false
+                    local jc = true --Wait Mode
+                    for _, Elevators in pairs(game:GetService('Workspace').Elevators:GetChildren()) do
+                        local Name = Elevators.State.Map.Title
+                        local plrs = Elevators.State.Players
                         local Modes = require(Elevators.Settings).Type
-						if getgenv().Maps[Name.Value] ~= nil and Modes == getgenv().Mode then
-							if (plrs.Value <= 0) then
-								jc = false -- Change to Joined Mode
-								prints("Join attempt...")
-								getgenv().status.Text = "Joining..."
-								RSRF:InvokeServer("Elevators","Enter",Elevators)
-								UnEquip()
-								for i,v in next, getgenv().Maps[Name.Value] do
+                        if getgenv().Maps[Name.Value] ~= nil and Modes == getgenv().Mode then
+                            if (plrs.Value <= 0) then
+                                jc = false -- Change to Joined Mode
+                                prints("Join attempt...")
+                                getgenv().status.Text = "Joining..."
+                                RSRF:InvokeServer("Elevators","Enter",Elevators)
+                                UnEquip()
+                                for i,v in next, getgenv().Maps[Name.Value] do
                                     EquipTroop(v)
-								end
-								prints("Joined elavator...")
-								getgenv().status.Text = "Joined"
-								while wait() do
-									getgenv().status.Text = "Joined ("..Elevators.State.Timer.Value.."s)"
-									if Elevators.State.Timer.Value == 0 then
-										local s = true --Teleporting...
-										for c = 1,100 do --This Progress Will Leave Elevator If A Player is Joining In 0 Second
+                                end
+                                prints("Joined elavator...")
+                                getgenv().status.Text = "Joined"
+                                while wait() do
+                                    getgenv().status.Text = "Joined ("..Elevators.State.Timer.Value.."s)"
+                                    if Elevators.State.Timer.Value == 0 then
+                                        local s = true --Teleporting...
+                                        for c = 1,100 do --This Progress Will Leave Elevator If A Player is Joining In 0 Second
                                             if (plrs.Value > 1) then
                                                 prints("Someone joined, leaving elevator...")
                                                 getgenv().status.Text = "Someone joined..."
@@ -81,63 +81,63 @@ spawn(function()
                                                 break
                                             end
                                             wait(0.01)
-										end
-										if Elevators.State.Timer.Value == 0 and s then --Check Elevator Information
-											getgenv().status.Text = "Teleporting..."
-											wait(60)
-											getgenv().status.Text = "Teleport failed!"
-											RSRF:InvokeServer("Elevators","Leave")
-										else
-											getgenv().status.Text = "Teleport failed! (Timer)"
-											RSRF:InvokeServer("Elevators","Leave")
-											getgenv().repeating = true -- Reset Progress
-										end
-									end
-									if getgenv().Maps[Name.Value] ~= nil then --This Progress Will Leave Elevator If A Player is Joining In
-										if antimulti then
-											if (plrs.Value > 1) then
-												RSRF:InvokeServer("Elevators","Leave")
-												prints("Someone joined, leaving elevator...")
-												getgenv().status.Text = "Someone joined..."
-												getgenv().repeating = true -- Reset Progress
-												break
-											elseif (plrs.Value == 0) then --Idk What is this maybe check player is in elevator?
-												wait(1)
-												if (plrs.Value == 0) then
-													wait(1)
-													if (plrs.Value == 0) then
-														wait(1)
-														if (plrs.Value == 0) then
-															wait(1)
-															if (plrs.Value == 0) then
+                                        end
+                                        if Elevators.State.Timer.Value == 0 and s then --Check Elevator Information
+                                            getgenv().status.Text = "Teleporting..."
+                                            wait(60)
+                                            getgenv().status.Text = "Teleport failed!"
+                                            RSRF:InvokeServer("Elevators","Leave")
+                                        else
+                                            getgenv().status.Text = "Teleport failed! (Timer)"
+                                            RSRF:InvokeServer("Elevators","Leave")
+                                            getgenv().repeating = true -- Reset Progress
+                                        end
+                                    end
+                                    if getgenv().Maps[Name.Value] ~= nil then --This Progress Will Leave Elevator If A Player is Joining In
+                                        if antimulti then
+                                            if (plrs.Value > 1) then
+                                                RSRF:InvokeServer("Elevators","Leave")
+                                                prints("Someone joined, leaving elevator...")
+                                                getgenv().status.Text = "Someone joined..."
+                                                getgenv().repeating = true -- Reset Progress
+                                                break
+                                            elseif (plrs.Value == 0) then --Idk What is this maybe check player is in elevator?
+                                                wait(1)
+                                                if (plrs.Value == 0) then
+                                                    wait(1)
+                                                    if (plrs.Value == 0) then
+                                                        wait(1)
+                                                        if (plrs.Value == 0) then
+                                                            wait(1)
+                                                            if (plrs.Value == 0) then
                                                                 prints("Error")
                                                                 getgenv().status.Text = "Error occured, check dev con"
                                                                 prints("Error occured, please open ticket on Money Maker Development discord server!")
                                                                 RSRF:InvokeServer("Elevators","Leave")
                                                                 getgenv().repeating = true -- Reset Progress
                                                                 break
-															end
-														end
-													end
-												end
-											end
-										end
-									else --Leave When Map Change Pretty Rare To Occur
-										RSRF:InvokeServer("Elevators","Leave")
-										prints("Map changed while joining, leaving...")
-										getgenv().status.Text = "Map changed..."
-										getgenv().repeating = true
-										break
-									end
-								end
-							end
-						end
-					end
-					if jc == true then
-						getgenv().repeating = true
-						prints("Waiting for map...")
-						getgenv().status.Text = "Waiting for map..."
-						if getgenv().timer >= 15 then -- Change Map After 15 sec
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    else --Leave When Map Change Pretty Rare To Occur
+                                        RSRF:InvokeServer("Elevators","Leave")
+                                        prints("Map changed while joining, leaving...")
+                                        getgenv().status.Text = "Map changed..."
+                                        getgenv().repeating = true
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    if jc == true then
+                        getgenv().repeating = true
+                        prints("Waiting for map...")
+                        getgenv().status.Text = "Waiting for map..."
+                        if getgenv().timer >= 15 then -- Change Map After 15 sec
                             getgenv().status.Text = "Force changing maps..."
                             getgenv().timer = 0
                             for i, v in pairs(game:GetService("Workspace").Elevators:GetChildren()) do
@@ -152,10 +152,10 @@ spawn(function()
                             wait(0.6)
                             RSRF:InvokeServer("Elevators","Leave")
                             wait(1)
-					    end
-				    end
-			    end
-		    end
-	    end)
+                        end
+                    end
+                end
+            end
+        end)
     end
 end)
