@@ -135,7 +135,7 @@ function Double()
 		Commander5 = {5},
 		Commander6 = {6}
 	}
-	local maxdistant = 16
+	local MaxDistant = 16
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
 	local w = library:CreateWindow('Auto Chain')
 	local Toggle = w:Toggle('Auto Chain Group 1', {flag = "autochain"})
@@ -196,11 +196,11 @@ function Double()
 	end
 	function CheckDistant(Coor1,Coor2)
 		print(Coor1,Coor2)
-		if Coor2 and Coor1:FindFirstChild("Torso") and Coor2:FindFirstChild("Torso") and (Coor2.Torso.Position - Coor1.Torso.Position).magnitude <= maxdistant then --First Group
+		if Coor2 and Coor1:FindFirstChild("Torso") and Coor2:FindFirstChild("Torso") and (Coor2.Torso.Position*Vector3.new(1, 0, 1) - Coor1.Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant then --First Group
 			return 1
-		elseif Coor2 and Coor1:FindFirstChild("Torso") and Coor2:FindFirstChild("Torso") and (Coor2.Torso.Position - Coor1.Torso.Position).magnitude > maxdistant then --Second Group
+		elseif Coor2 and Coor1:FindFirstChild("Torso") and Coor2:FindFirstChild("Torso") and (Coor2.Torso.Position*Vector3.new(1, 0, 1) - Coor1.Torso.Position*Vector3.new(1, 0, 1)).magnitude > MaxDistant then --Second Group
 			return 2
-		elseif not Coor2 and (troops["Commander2"][2] and (Coor1.Torso.Position - troops["Commander2"][2].Torso.Position).magnitude <= maxdistant) or (troops["Commander3"][2] and (Coor1.Torso.Position - troops["Commander3"][2].Torso.Position).magnitude <= maxdistant) then --Set commander 1 which will be use to check distant
+		elseif not Coor2 and (troops["Commander2"][2] and (Coor1.Torso.Position*Vector3.new(1, 0, 1) - troops["Commander2"][2].Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant) or (troops["Commander3"][2] and (Coor1.Torso.Position*Vector3.new(1, 0, 1) - troops["Commander3"][2].Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant) then --Set commander 1 which will be use to check distant
 			return 0
 		else
 			return 0
