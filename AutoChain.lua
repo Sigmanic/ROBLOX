@@ -20,12 +20,8 @@ if getgenv().PreferSingle ~= true and getgenv().PreferDouble ~= true then
 		end
 		Double()
 	end)
-elseif getgenv().PreferSingle == true then
-	Single()
-elseif getgenv().PreferDouble == true then
-	Double()
 end
-function Single(Type)
+function Single()
 	local Status = {}
 	local troops = {
 		Commander1 = {1},
@@ -301,4 +297,9 @@ function Double()
 			end
 		end
 	end)
+end
+if getgenv().PreferSingle == true then
+	Single()
+elseif getgenv().PreferDouble == true then
+	Double()
 end
