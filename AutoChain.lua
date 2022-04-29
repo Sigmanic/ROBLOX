@@ -1,22 +1,30 @@
-local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
-local w = library:CreateWindow('Auto Chain Settings')
-w:Section('Choose The Version')
-w:Button("Single Chain",function()
-	for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-		if v:IsA("Frame") and v.Name == "Auto Chain Settings" then
-			v.Parent:Destroy()
+--getgenv().PreferSingle = true
+--getgenv().PreferDouble = true
+if getgenv().PreferSingle ~= true and getgenv().PreferDouble ~= true then
+	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
+	local w = library:CreateWindow('Auto Chain Settings')
+	w:Section('Choose The Version')
+	w:Button("Single Chain",function()
+		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+			if v:IsA("Frame") and v.Name == "Auto Chain Settings" then
+				v.Parent:Destroy()
+			end
 		end
-	end
+		Single()
+	end)
+	w:Button("Double Chain",function()
+		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+			if v:IsA("Frame") and v.Name == "Auto Chain Settings" then
+				v.Parent:Destroy()
+			end
+		end
+		Double()
+	end)
+elseif getgenv().PreferSingle == true then
 	Single()
-end)
-w:Button("Double Chain",function()
-	for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-		if v:IsA("Frame") and v.Name == "Auto Chain Settings" then
-			v.Parent:Destroy()
-		end
-	end
+elseif getgenv().PreferDouble == true then
 	Double()
-end)
+end
 function Single(Type)
 	local Status = {}
 	local troops = {
@@ -25,11 +33,19 @@ function Single(Type)
 		Commander3 = {3},
 	}
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
-	local w = library:CreateWindow('Auto Chain')
+	local w = library:CreateWindow('Auto Chain Single')
 	local Toggle = w:Toggle('Toggle Auto Chain', {flag = "autochain"})
 	w:Section('Commander 1: None')
 	w:Section('Commander 2: None')
 	w:Section('Commander 3: None')
+	w:Button("Switch To Double Chain",function()
+		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+			if v:IsA("Frame") and v.Name == "Auto Chain Single" then
+				v.Parent:Destroy()
+			end
+		end
+		Double()
+	end)
 	for i,v in pairs(game.CoreGui:GetDescendants()) do
 		if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 1: None" then
 			table.insert(Status,v)
@@ -137,7 +153,7 @@ function Double()
 	}
 	local MaxDistant = 16
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
-	local w = library:CreateWindow('Auto Chain')
+	local w = library:CreateWindow('Auto Chain Double')
 	local Toggle = w:Toggle('Auto Chain Group 1', {flag = "autochain"})
 	w:Section('Commander 1: None')
 	w:Section('Commander 2: None')
@@ -146,6 +162,14 @@ function Double()
 	w:Section('Commander 4: None')
 	w:Section('Commander 5: None')
 	w:Section('Commander 6: None')
+	w:Button("Switch To Single Chain",function()
+		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+			if v:IsA("Frame") and v.Name == "Auto Chain Double" then
+				v.Parent:Destroy()
+			end
+		end
+		Single()
+	end)
 	for i,v in pairs(game.CoreGui:GetDescendants()) do
 		if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 1: None" then
 			table.insert(Status,v)
