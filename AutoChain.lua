@@ -21,13 +21,16 @@ if getgenv().PreferSingle ~= true and getgenv().PreferDouble ~= true then
 		Double()
 	end)
 end
+getgenv().troops = {		--Contain number and tower instance
+	Commander1 = {1},
+	Commander2 = {2},
+	Commander3 = {3},
+	Commander4 = {4},
+	Commander5 = {5},
+	Commander6 = {6}
+}
 function Single()
 	local Status = {}
-	local troops = {
-		Commander1 = {1},
-		Commander2 = {2},
-		Commander3 = {3},
-	}
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
 	local w = library:CreateWindow('Auto Chain Single')
 	local Toggle = w:Toggle('Toggle Auto Chain', {flag = "autochain"})
@@ -40,6 +43,8 @@ function Single()
 				v.Parent:Destroy()
 			end
 		end
+		TowerAdded:Disconnect()
+		TowerRemoved:Disconnect()
 		Double()
 	end)
 	for i,v in pairs(game.CoreGui:GetDescendants()) do
@@ -81,7 +86,7 @@ function Single()
 			end
 		end
 	end
-	game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
+	TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
 		wait(.2)
 		if not v:FindFirstChild("Replicator") then
 			repeat wait() until v:FindFirstChild("Replicator")
@@ -90,7 +95,7 @@ function Single()
 			SelectedTower(v,true)
 		end
 	end)
-	game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
+	TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
 		wait()
 		if v.Replicator:GetAttribute("OwnerName") == game.Players.LocalPlayer.DisplayName and v.Replicator:GetAttribute("Type") == "Commander" then
 			SelectedTower(v,false)
@@ -139,14 +144,6 @@ function Single()
 end
 function Double()
 	local Status = {}
-	local troops = {		--Contain number and tower instance
-		Commander1 = {1},
-		Commander2 = {2},
-		Commander3 = {3},
-		Commander4 = {4},
-		Commander5 = {5},
-		Commander6 = {6}
-	}
 	local MaxDistant = 16
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
 	local w = library:CreateWindow('Auto Chain Double')
@@ -164,6 +161,8 @@ function Double()
 				v.Parent:Destroy()
 			end
 		end
+		TowerAdded:Disconnect()
+		TowerRemoved:Disconnect()
 		Single()
 	end)
 	for i,v in pairs(game.CoreGui:GetDescendants()) do
@@ -233,7 +232,7 @@ function Double()
 			end
 		end
 	end
-	game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
+	TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
 		wait(.2)
 		if not v:FindFirstChild("Replicator") then
 			repeat wait() until v:FindFirstChild("Replicator")
@@ -242,7 +241,7 @@ function Double()
 			SelectedTower(v,true,CheckDistant(v,troops["Commander1"][2]))
 		end
 	end)
-	game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
+	TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
 		wait()
 		if v.Replicator:GetAttribute("OwnerName") == game.Players.LocalPlayer.DisplayName and v.Replicator:GetAttribute("Type") == "Commander" then
 			SelectedTower(v,false)
