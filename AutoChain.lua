@@ -1,5 +1,5 @@
-getgenv().PreferSingle = true
-getgenv().PreferDouble = true
+--getgenv().PreferSingle = true
+--getgenv().PreferDouble = true
 if getgenv().PreferSingle ~= true and getgenv().PreferDouble ~= true then
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
 	local w = library:CreateWindow('Auto Chain Settings')
