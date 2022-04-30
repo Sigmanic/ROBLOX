@@ -1,5 +1,5 @@
---getgenv().PreferSingle = true
---getgenv().PreferDouble = true
+getgenv().PreferSingle = true
+getgenv().PreferDouble = true
 if getgenv().PreferSingle ~= true and getgenv().PreferDouble ~= true then
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
 	local w = library:CreateWindow('Auto Chain Settings')
@@ -7,7 +7,7 @@ if getgenv().PreferSingle ~= true and getgenv().PreferDouble ~= true then
 	w:Button("Single Chain",function()
 		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
 			if v:IsA("Frame") and v.Name == "Auto Chain Settings" then
-				v.Parent:Destroy()
+				v.Parent.Parent:Destroy()
 			end
 		end
 		Single()
@@ -15,20 +15,22 @@ if getgenv().PreferSingle ~= true and getgenv().PreferDouble ~= true then
 	w:Button("Double Chain",function()
 		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
 			if v:IsA("Frame") and v.Name == "Auto Chain Settings" then
-				v.Parent:Destroy()
+				v.Parent.Parent:Destroy()
 			end
 		end
 		Double()
 	end)
 end
-getgenv().troops = {		--Contain number and tower instance
-	Commander1 = {1},
-	Commander2 = {2},
-	Commander3 = {3},
-	Commander4 = {4},
-	Commander5 = {5},
-	Commander6 = {6}
-}
+if not getgenv().troops then
+	getgenv().troops = {		--Contain number and tower instance
+		Commander1 = {1},
+		Commander2 = {2},
+		Commander3 = {3},
+		Commander4 = {4},
+		Commander5 = {5},
+		Commander6 = {6}
+	}
+end
 function Single()
 	local Status = {}
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
@@ -40,7 +42,7 @@ function Single()
 	w:Button("Switch To Double Chain",function()
 		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
 			if v:IsA("Frame") and v.Name == "Auto Chain Single" then
-				v.Parent:Destroy()
+				v.Parent.Parent:Destroy()
 			end
 		end
 		TowerAdded:Disconnect()
@@ -54,6 +56,14 @@ function Single()
 			table.insert(Status,v)
 		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 3: None" then
 			table.insert(Status,v)
+		end
+	end
+	for i,v in next,troops do
+		local Index = v[1]
+		local Values = v[2]
+		print(i,Index,Values)
+		if Values and (Index >= 1 and Index <= 3) then
+			Status[Index].Text = "Commander "..Index..": Selected"
 		end
 	end
 	function SelectedTower(Tower,Value)
@@ -158,7 +168,7 @@ function Double()
 	w:Button("Switch To Single Chain",function()
 		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
 			if v:IsA("Frame") and v.Name == "Auto Chain Double" then
-				v.Parent:Destroy()
+				v.Parent.Parent:Destroy()
 			end
 		end
 		TowerAdded:Disconnect()
@@ -178,6 +188,13 @@ function Double()
 			table.insert(Status,v)
 		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 6: None" then
 			table.insert(Status,v)
+		end
+	end
+	for i,v in next,troops do
+		local Index = v[1]
+		local Values = v[2]
+		if Values then
+			Status[Index].Text = "Commander "..Index..": Selected"
 		end
 	end
 	function SelectedTower(Tower,Value,Group)
