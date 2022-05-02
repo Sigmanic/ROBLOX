@@ -4,6 +4,7 @@
 ]]--
 --getgenv().PreferSingle = true
 --getgenv().PreferDouble = true
+local FirstCom = true
 local CancelLoop = false
 if getgenv().PreferSingle ~= true and getgenv().PreferDouble ~= true then
 	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
@@ -234,6 +235,9 @@ function Double()
 				if Values == Tower then
 					table.remove(troops[i],2)
 					Status[Index].Text = "Commander "..Index..": None"
+					if tostring(i) == "Commander1" then
+						FirstCom = true
+					end
 				end
 			end
 		end
@@ -247,7 +251,10 @@ function Double()
 				return 2
 			end
 		elseif not Coor2 then
-			if troops["Commander2"][2] and (Coor1.Torso.Position*Vector3.new(1, 0, 1) - troops["Commander2"][2].Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant then --Set commander 1 which will be use to check distant
+			if FirstCom and not (troops["Commander2"][2] or troops["Commander3"][2]) then
+				FirstCom = false
+				return 0
+			elseif troops["Commander2"][2] and (Coor1.Torso.Position*Vector3.new(1, 0, 1) - troops["Commander2"][2].Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant then --Set commander 1 which will be use to check distant
 				return 0
 			elseif troops["Commander3"][2] and (Coor1.Torso.Position*Vector3.new(1, 0, 1) - troops["Commander3"][2].Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant then --Set commander 1 which will be use to check distant
 				return 0
