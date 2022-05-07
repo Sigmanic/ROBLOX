@@ -62,7 +62,7 @@ function NotificationTheme.returnBaseNotification(CustomTheme)
 	Notification.Size = UDim2.new(0, 400, 0, 100)
 	StatusBar.Name = "StatusBar"
 	StatusBar.Parent = Notification
-	StatusBar.BackgroundColor3 = Color3.fromRGB(255, 146, 245)
+	StatusBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	StatusBar.BorderSizePixel = 0
 	StatusBar.Size = UDim2.new(0, 20, 0, 100)
 	StatusBar.ZIndex = 5
