@@ -16,7 +16,7 @@ local NotificationTheme = {
 	
 	-- // Default Settings
 	WaitTime = 2,
-	StorageLocation = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"),
+	StorageLocation = game:GetService("CoreGui"),
 	GUIName = "NotificationGUI",
 	NotificationName = "Notification",
 }
