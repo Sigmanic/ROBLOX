@@ -16,7 +16,7 @@ if not getgenv().troops then
 end
 function Single()
 	local Status = {}
-	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
+	local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 	local w = library:CreateWindow('Auto Chain Single')
 	local Toggle = w:Toggle('Toggle Auto Chain', {flag = "autochain"})
 	w:Section('Commander 1: None')
@@ -140,7 +140,7 @@ end
 function Double()
 	local Status = {}
 	local MaxDistant = 15
-	local library = loadstring(game:HttpGet("https://pastebin.com/raw/L1WAZA8D", true))()
+	local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 	local w = library:CreateWindow('Auto Chain Double')
 	local Toggle = w:Toggle('Auto Chain Group 1', {flag = "autochain"})
 	w:Section('Commander 1: None')
