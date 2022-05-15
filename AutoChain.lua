@@ -79,7 +79,7 @@ function Single()
 		end
 	end
 	TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
-		wait(1)
+		wait(.7)
 		if not v:FindFirstChild("Replicator") then
 			repeat wait() until v:FindFirstChild("Replicator")
 		end
@@ -256,7 +256,7 @@ function Double()
 		end
 	end
 	TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
-		wait(1)
+		wait(.7)
 		if not v:FindFirstChild("Replicator") then
 			repeat wait() until v:FindFirstChild("Replicator")
 		end
