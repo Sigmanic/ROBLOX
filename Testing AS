@@ -14,11 +14,11 @@ if not getgenv().ExecutedAlr then
     loadstring(
         game:HttpGet("https://raw.githubusercontent.com/banbuskox/dfhtyxvzexrxgfdzgzfdvfdz/main/ikcxujvkdsStrat")
     )()
-    getgenv().StratMaintance = true
+    getgenv().StratMaintance = false
     if getgenv().StratMaintance == true then
         repeat
             wait()
-            getgenv().StratMaintance = true
+            getgenv().StratMaintance = false
             getgenv().status = "Script in maintenance, waiting..."
             wait(1)
         until getgenv().StratMaintance == false or getgenv().SkipStratMaintance == true
