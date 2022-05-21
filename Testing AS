@@ -14,11 +14,11 @@ if not getgenv().ExecutedAlr then
     loadstring(
         game:HttpGet("https://raw.githubusercontent.com/banbuskox/dfhtyxvzexrxgfdzgzfdvfdz/main/ikcxujvkdsStrat")
     )()
-    loadstring(game:HttpGet("https://banbusscripts.netlify.app/Scripts/IsAutoStratMain"))()
+    getgenv().StratMaintance = true
     if getgenv().StratMaintance == true then
         repeat
             wait()
-            loadstring(game:HttpGet("https://banbusscripts.netlify.app/Scripts/IsAutoStratMain"))()
+            getgenv().StratMaintance = true
             getgenv().status = "Script in maintenance, waiting..."
             wait(1)
         until getgenv().StratMaintance == false or getgenv().SkipStratMaintance == true
