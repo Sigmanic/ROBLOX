@@ -1,24 +1,67 @@
 --[[
+	The Biggest Technical Update!
+	This update took a long time due to I had to finish my final examination and also lost motivation.
+	Changelog:
+	+Added:
+	++ New Remade SelectedTower() function and Status System.
+	+ Tweak a bit of CheckDistant() function.
+	+ Supported low level commander, so instead of skipping it, now it will loop active ability in 10s and skip it when the ability doesn't active it in 10s.
+	+ Added getgenv().KeepTracking, keep tracking getgenv().troops and updated it when a commander removed or added, even after the gui already deleted.
+	+ Added Delete Gui button.
+	+ Added Executed Check, prevents script from errors, can be disabled using Delete Gui button.
+	+ Added getgenv().DebugModes, print all information about a function is working.
+	*Changed, Fixed:
+	* Changed Chain() function, now it will stop at the next commander when disabled, instead of running through a loop then stopped
+	* Changed getgenv().troops, so it can work with new remade SelectedTower().
+	* Change TowerAdded(), made it selected faster.
+	* Fixed error in TowerRemoved() function.
+	==============================Credits==============================
 	This Script Is Open-source, Feel Free To Change Anything.
 	Credit: Sigmanic (Sigmanic#6607 --Main Account, Thomas Andrew#8787 --Second Account)
 ]]--
---getgenv().PreferDouble = true
-local CancelLoop = false
+--getgenv().PreferDouble = true	--Remove the first "--" if you want to use double chain.
+getgenv().KeepTracking = true	--Recommended turn this on.
+getgenv().DebugModes = false
+
+if getgenv().AlrExecAC then
+	game.StarterGui:SetCore("SendNotification", {
+	Title = "Auto Chain",
+	Text = "Script Already Executed.";
+	Duration = 6;
+	})
+	return
+end
+getgenv().AlrExecAC = true
 if not getgenv().troops then
 	getgenv().troops = {		--Contain number and tower instance
-		Commander1 = {1},
-		Commander2 = {2},
-		Commander3 = {3},
-		Commander4 = {4},
-		Commander5 = {5},
-		Commander6 = {6}
+		[1] = {1},
+		[2] = {2},
+		[3] = {3},
+		[4] = {4},
+		[5] = {5},
+		[6] = {6}
 	}
 end
+function prints(...)
+	if DebugModes then
+		return print(...)
+	else
+		return
+	end
+end
+if KeepTracking and typeof(getgenv().TowerAdded) == "RBXScriptConnection" and typeof(getgenv().TowerRemoved) == "RBXScriptConnection" then
+	prints("deleted TowerAdded,TowerRemoved")
+	getgenv().TowerAdded:Disconnect()
+	getgenv().TowerRemoved:Disconnect()
+end
 function Single()
-	local Status = {}
+	local CancelLoop = false
+	local StatusTable = {}
+	getgenv().TowerAdded = nil
+	getgenv().TowerRemoved = nil
 	local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 	local w = library:CreateWindow('Auto Chain Single')
-	local Toggle = w:Toggle('Toggle Auto Chain', {flag = "autochain"})
+	w:Toggle('Active Auto Chain', {flag = "autochain"},function(value) StatusTable["autochain"] = value end)
 	w:Section('Commander 1: None')
 	w:Section('Commander 2: None')
 	w:Section('Commander 3: None')
@@ -29,107 +72,179 @@ function Single()
 			end
 		end
 		CancelLoop = true
-		TowerAdded:Disconnect()
-		TowerRemoved:Disconnect()
+		getgenv().TowerAdded:Disconnect()
+		getgenv().TowerRemoved:Disconnect()
+		StatusTable = nil
 		Double()
 	end)
+	w:Button("Delete Gui",function()
+		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+			if v:IsA("Frame") and v.Name == "Auto Chain Single" then
+				v.Parent.Parent:Destroy()
+			end
+		end
+		CancelLoop = true
+		if not KeepTracking then
+			getgenv().TowerAdded:Disconnect()
+			getgenv().TowerRemoved:Disconnect()
+		end
+		StatusTable = nil
+		getgenv().AlrExecAC = false
+	end)
 	for i,v in pairs(game.CoreGui:GetDescendants()) do
-		if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 1: None" then
-			table.insert(Status,v)
-		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 2: None" then
-			table.insert(Status,v)
-		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 3: None" then
-			table.insert(Status,v)
+		if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text:match("Commander") and v.Text:match("None") then
+			StatusTable[tonumber(v.Text:match("%d+"))] = v
+		end
+	end
+	local function Status(Index,Text)
+		if not StatusTable then
+			return
+		elseif StatusTable[Index] == nil then
+			return prints(Index,"Doesn't existed")
+		else
+			if type(Text) == "string" then
+				StatusTable[Index].Text = tostring(Text)
+				return
+			else 
+				return StatusTable[Index]
+			end
 		end
 	end
 	for i,v in next,troops do
-		local Index = v[1]
 		local Values = v[2]
-		--print(i,Index,Values)
-		if Values and (Index >= 1 and Index <= 3) then
-			Status[Index].Text = "Commander "..Index..": Selected"
+		if Values and Status(i) then
+			prints("Status",i,v[2])
+			Status(i,"Commander "..i..": Selected")
 		end
 	end
 	function SelectedTower(Tower,Value)
 		if Value == true then --Select Tower
-			if not troops["Commander1"][2] then
-				table.insert(troops["Commander1"],2,Tower)
-				Status[1].Text = "Commander 1: Selected"
-			elseif not troops["Commander2"][2] then
-				table.insert(troops["Commander2"],2,Tower)
-				Status[2].Text = "Commander 2: Selected"
-			elseif not troops["Commander3"][2] then
-				table.insert(troops["Commander3"],2,Tower)
-				Status[3].Text = "Commander 3: Selected"
+			for i=1,#troops do
+				if Tower == troops[i][2] then
+					prints("SelectedTower()",Tower,"Already Existed")
+					return
+				end
+			end
+			for i,v in ipairs(troops) do
+				if not v[2] and Status(i) then
+					prints("SelectedTower()",Tower,i)
+					table.insert(troops[i],2,Tower)
+					Status(i,"Commander "..i..": Selected")
+					return
+				end
 			end
 		elseif Value == false then --Remove Tower
 			for i,v in next,troops do
-				local Index = v[1]
 				local Values = v[2]
 				if Values == Tower then
 					table.remove(troops[i],2)
-					Status[Index].Text = "Commander "..Index..": None"
+					Status(i,"Commander "..i..": None")
 				end
 			end
 		end
 	end
 	for i,v in pairs(game:GetService("Workspace").Towers:GetChildren()) do
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game.Players.LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
-			SelectedTower(v,true)
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+			prints(v,"Added1")
+			--SelectedTower(v,true)
+			task.spawn(SelectedTower,v,true)
 		end
 	end
-	TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
-		wait(.7)
+	getgenv().TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
+		wait(.25)
 		if not v:FindFirstChild("Replicator") then
 			repeat wait() until v:FindFirstChild("Replicator")
 		end
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game.Players.LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
-			SelectedTower(v,true)
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+			prints("TowerAdded",v,"Added")
+			--SelectedTower(v,true)
+			task.spawn(SelectedTower,v,true)
 		end
 	end)
-	TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
-		wait()
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game.Players.LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
-			SelectedTower(v,false)
+	getgenv().TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+			prints("TowerRemoved",v,"Removed")
+			--SelectedTower(v,false)
+			task.spawn(SelectedTower,v,false)
 		end
+		task.wait()
 	end)
-	function Chain(Tower,Info)
-		if not Info then
-			Info = 0
+	local function Chain(Tower,Type)
+		if CancelLoop then
+			prints("CancelLoop 1",CancelLoop)
+			return 
 		end
+		local Info = Tower[1]
+		if not Status(Type) then
+			Status(Info,"Commander "..Info..": Prepare")
+			repeat task.wait() until Status(Type)
+		end
+		local Tower = Tower[2]
 		if Tower then
 			if Tower.Replicator:GetAttribute("Upgrade") >= 2 then
 				if not Tower.Replicator.Stuns:GetAttribute("1") or Tower.Replicator.Stuns:GetAttribute("1") == false and Tower.Replicator:GetAttribute("Upgrade") >= 2 then
-					game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"]= Tower ,["Name"] = "Call Of Arms"})
-					Status[Info].Text = "Commander "..Info..": Actived"
+					game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+					Status(Info,"Commander "..Info..": Actived")
 					task.wait(10.01)
-					Status[Info].Text = "Commander "..Info..": Waiting"
+					Status(Info,"Commander "..Info..": Waiting")
 				else
-					Status[Info].Text = "Commander "..Info..": Stunning"
+					Status(Info,"Commander "..Info..": Stunning")
 					repeat wait() 
 					until not Tower.Replicator.Stuns:GetAttribute("1") or Tower.Replicator.Stuns:GetAttribute("1") == false
-					game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"]= Tower ,["Name"] = "Call Of Arms"})
-					Status[Info].Text = "Commander "..Info..": Actived"
+					game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+					Status(Info,"Commander "..Info..": Actived")
 					task.wait(10.01)
-					Status[Info].Text = "Commander "..Info..": Waiting"
+					Status(Info,"Commander "..Info..": Waiting")
 				end
 			elseif Tower.Replicator:GetAttribute("Upgrade") < 2 then
-				Status[Info].Text = "Commander "..Info..": Low Level"
-				task.wait(10.01)
-				Status[Info].Text = "Commander "..Info..": Waiting"
+				local OldTime = os.clock()
+				local Times,Exec = 0,0
+				repeat
+					task.spawn(function()
+						if Tower:FindFirstChild("AnimationController") then
+							Status(Info,"Commander "..Info..": Low Level")
+						else
+							Status(Info,"Commander "..Info..": Skipping")
+						end
+						game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+						Exec = Exec + 1
+					end)
+					Times = Times + 2.5
+					--prints(Times)
+					task.wait(.242)
+				until (Tower:FindFirstChild("AnimationController") and tostring(Tower:FindFirstChild("AnimationController"):GetPlayingAnimationTracks()[4]) == "Stance") or Times >= 99
+				--local TimeNeed = math.floor((os.clock() - OldTime)*100+0.5)/100
+				local TimeLost = os.clock() - OldTime
+				--prints(," Time:",os.clock() - OldTime)
+				if Tower:FindFirstChild("AnimationController") and tostring(Tower:FindFirstChild("AnimationController"):GetPlayingAnimationTracks()[4]) == "Stance" then
+					Status(Info,"Commander "..Info..": Actived")
+					task.wait(10-0.24)
+				end
+				if (os.clock() - OldTime) < 9.999 then
+					prints("Time Lower:",os.clock() - OldTime)
+					task.wait(0.025)
+				end
+				local TimeTotal = os.clock() - OldTime
+				Status(Info,"Commander "..Info..": Waiting")
+				prints("Total Time:",TimeTotal,"Execute:",Exec)
+				prints("Time Waiting",TimeTotal-TimeLost,"Time Lost",TimeLost)
 			end
 		else
-			Status[Info].Text = "Commander "..Info..": Skipping"
+			Status(Info,"Commander "..Info..": Skipping")
 			task.wait(10.01)
-			Status[Info].Text = "Commander "..Info..": Waiting"
+			Status(Info,"Commander "..Info..": Waiting")
+		end
+		if not Status(Type) and (Info == 3 or Info == 6) then
+			local Info = Info - 2
+			Status(Info,"Commander "..Info..": Prepare")
 		end
 	end
 	task.spawn(function()
 		while task.wait() do
 			if w.flags.autochain and not CancelLoop then
-				Chain(troops["Commander1"][2],troops["Commander1"][1])
-				Chain(troops["Commander2"][2],troops["Commander2"][1])
-				Chain(troops["Commander3"][2],troops["Commander3"][1])
+				Chain(troops[1],"autochain")
+				Chain(troops[2],"autochain")
+				Chain(troops[3],"autochain")
 			elseif CancelLoop then
 				CancelLoop = false
 				break
@@ -138,15 +253,18 @@ function Single()
 	end)
 end
 function Double()
-	local Status = {}
+	local StatusTable = {}
 	local MaxDistant = 15
+	local CancelLoop = false
+	getgenv().TowerAdded = nil
+	getgenv().TowerRemoved = nil
 	local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 	local w = library:CreateWindow('Auto Chain Double')
-	local Toggle = w:Toggle('Auto Chain Group 1', {flag = "autochain"})
+	w:Toggle('Auto Chain Group 1', {flag = "autochain"},function(value) StatusTable["autochain"] = value end)
 	w:Section('Commander 1: None')
 	w:Section('Commander 2: None')
 	w:Section('Commander 3: None')
-	local Toggle = w:Toggle('Auto Chain Group 2', {flag = "autochain1"})
+	w:Toggle('Auto Chain Group 2', {flag = "autochain1"},function(value) StatusTable["autochain1"] = value end)
 	w:Section('Commander 4: None')
 	w:Section('Commander 5: None')
 	w:Section('Commander 6: None')
@@ -157,156 +275,217 @@ function Double()
 			end
 		end
 		CancelLoop = true
-		TowerAdded:Disconnect()
-		TowerRemoved:Disconnect()
+		getgenv().TowerAdded:Disconnect()
+		getgenv().TowerRemoved:Disconnect()
+		StatusTable = nil
 		Single()
 	end)
+	w:Button("Delete Gui",function()
+		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+			if v:IsA("Frame") and v.Name == "Auto Chain Double" then
+				v.Parent.Parent:Destroy()
+			end
+		end
+		CancelLoop = true
+		if not KeepTracking then
+			getgenv().TowerAdded:Disconnect()
+			getgenv().TowerRemoved:Disconnect()
+		end
+		StatusTable = nil
+		getgenv().AlrExecAC = false
+	end)
 	for i,v in pairs(game.CoreGui:GetDescendants()) do
-		if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 1: None" then
-			table.insert(Status,v)
-		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 2: None" then
-			table.insert(Status,v)
-		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 3: None" then
-			table.insert(Status,v)
-		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 4: None" then
-			table.insert(Status,v)
-		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 5: None" then
-			table.insert(Status,v)
-		elseif v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text == "Commander 6: None" then
-			table.insert(Status,v)
+		if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text:match("Commander") and v.Text:match("None") then
+			StatusTable[tonumber(v.Text:match("%d+"))] = v
+		end
+	end
+	local function Status(Index,Text)
+		if not StatusTable then
+			return
+		elseif StatusTable[Index] == nil then
+			return prints(Index,"Doesn't existed")
+		else
+			if type(Text) == "string" then
+				StatusTable[Index].Text = tostring(Text)
+				return
+			else 
+				return StatusTable[Index]
+			end
 		end
 	end
 	for i,v in next,troops do
-		local Index = v[1]
 		local Values = v[2]
-		if Values then
-			Status[Index].Text = "Commander "..Index..": Selected"
+		if Values and Status(i) then
+			prints("Status",i,v[2])
+			Status(i,"Commander "..i..": Selected")
 		end
 	end
 	function SelectedTower(Tower,Value,Group)
-		--print(Tower,Value,Group)
+		--prints(Tower,Value,Group)
 		if Value == true then --Select Tower
-			if Group == 0 then
+			if Group == 0 or Group == nil then
 				return
 			end
-			if not troops["Commander1"][2] and Group == 1 then
-				table.insert(troops["Commander1"],2,Tower)
-				Status[1].Text = "Commander 1: Selected"
-			elseif not troops["Commander2"][2] and Group == 1 then
-				table.insert(troops["Commander2"],2,Tower)
-				Status[2].Text = "Commander 2: Selected"
-			elseif not troops["Commander3"][2] and Group == 1 then
-				table.insert(troops["Commander3"],2,Tower)
-				Status[3].Text = "Commander 3: Selected"
-			elseif not troops["Commander4"][2] and Group == 2 then
-				table.insert(troops["Commander4"],2,Tower)
-				Status[4].Text = "Commander 4: Selected"
-			elseif not troops["Commander5"][2] and Group == 2 then
-				table.insert(troops["Commander5"],2,Tower)
-				Status[5].Text = "Commander 5: Selected"
-			elseif not troops["Commander6"][2] and Group == 2 then
-				table.insert(troops["Commander6"],2,Tower)
-				Status[6].Text = "Commander 6: Selected"
+			for i,v in ipairs(troops) do
+				if not v[2] then
+					if Group == 1 and i <= 3 then
+						--prints("SelectedTower()","Group1:",i)
+						table.insert(troops[i],2,Tower)
+						Status(i,"Commander "..i..": Selected")
+						return
+					elseif Group == 2 and 4 <= i and i <= 6 then
+						--prints("SelectedTower()","Group2:",i)
+						table.insert(troops[i],2,Tower)
+						Status(i,"Commander "..i..": Selected")
+						return
+					end
+				end
 			end
 		elseif Value == false then --Remove Tower
 			for i,v in next,troops do
-				local Index = v[1]
 				local Values = v[2]
 				if Values == Tower then
 					table.remove(troops[i],2)
-					Status[Index].Text = "Commander "..Index..": None"
+					Status(i,"Commander "..i..": None")
 				end
 			end
 		end
 	end
 	function CheckDistant(Tower1) --Tower1: Tower Will Be Checked
-		local Tower2 = troops["Commander1"][2] or troops["Commander2"][2] or troops["Commander3"][2]
+		for i=1,#troops do
+			if Tower1 == troops[i][2] then
+				prints("CheckDistant()",Tower1,"Already Existed")
+				return 0
+			end
+		end
+		local Tower2 = troops[1][2] or troops[2][2] or troops[3][2]
 		if Tower2 and Tower2:FindFirstChild("Torso") and Tower2:FindFirstChild("Torso") then
-			if troops["Commander1"][2] and troops["Commander2"][2] and troops["Commander3"][2] then
-				if Tower1 == troops["Commander1"][2] or Tower1 == troops["Commander2"][2] and Tower1 == troops["Commander3"][2] then
-					return 0
-				end
+			if troops[1][2] and troops[2][2] and troops[3][2] then
 				return 2
+			elseif troops[4][2] and troops[5][2] and troops[6][2] and not (troops[1][2] and troops[2][2] and troops[3][2]) then
+				return 1
 			elseif (Tower1.Torso.Position*Vector3.new(1, 0, 1) - Tower2.Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant then --First Group
 				return 1
 			elseif (Tower1.Torso.Position*Vector3.new(1, 0, 1) - Tower2.Torso.Position*Vector3.new(1, 0, 1)).magnitude > MaxDistant then --Second Group
 				return 2
 			end
 		elseif not Tower2 then
-			Tower2 = troops["Commander4"][2] or troops["Commander5"][2] or troops["Commander6"][2]
+			Tower2 = troops[4][2] or troops[5][2] or troops[6][2]
 			if Tower2 and Tower2:FindFirstChild("Torso") and Tower2:FindFirstChild("Torso") then
-				if troops["Commander4"][2] and troops["Commander5"][2] and troops["Commander6"][2] then
-					if Tower1 == troops["Commander4"][2] or Tower1 == troops["Commander5"][2] and Tower1 == troops["Commander6"][2] then
-						return 0
-					end
+				if troops[4][2] and troops[5][2] and troops[6][2] then
 					return 1
 				elseif (Tower1.Torso.Position*Vector3.new(1, 0, 1) - Tower2.Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant then --First Group
 					return 2
 				elseif (Tower1.Torso.Position*Vector3.new(1, 0, 1) - Tower2.Torso.Position*Vector3.new(1, 0, 1)).magnitude > MaxDistant then --Second Group
 					return 1
 				end
-			elseif not Tower2 then --When there are no more towers to check :v
+			elseif not Tower2 then --When there are no more towers to check
 				return 1
 			end
 		end
 	end
 	for i,v in pairs(game:GetService("Workspace").Towers:GetChildren()) do
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game.Players.LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
-			SelectedTower(v,true,CheckDistant(v))
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+			prints(v,"Added1")
+			--SelectedTower(v,true,CheckDistant(v))
+			task.spawn(SelectedTower,v,true,CheckDistant(v))
 		end
 	end
-	TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
-		wait(.7)
+	getgenv().TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
+		wait(.25)
 		if not v:FindFirstChild("Replicator") then
 			repeat wait() until v:FindFirstChild("Replicator")
 		end
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game.Players.LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
-			SelectedTower(v,true,CheckDistant(v))
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+			prints("TowerAdded",v,"Added")
+			--SelectedTower(v,true,CheckDistant(v))
+			task.spawn(SelectedTower,v,true,CheckDistant(v))
 		end
 	end)
-	TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
-		wait()
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game.Players.LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
-			SelectedTower(v,false)
+	getgenv().TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+			prints("TowerRemoved",v,"Removed")
+			--SelectedTower(v,false)
+			task.spawn(SelectedTower,v,false)
 		end
+		task.wait()
 	end)
-	function Chain(Tower,Info)
-		if not Info then
-			Info = 0
+	local function Chain(Tower,Type)
+		if CancelLoop then
+			prints("CancelLoop 2",CancelLoop)
+			return 
 		end
+		local Info = Tower[1]
+		if not Status(Type) then
+			Status(Info,"Commander "..Info..": Prepare")
+			repeat task.wait() until Status(Type)
+		end
+		local Tower = Tower[2]
 		if Tower then
 			if Tower.Replicator:GetAttribute("Upgrade") >= 2 then
 				if not Tower.Replicator.Stuns:GetAttribute("1") or Tower.Replicator.Stuns:GetAttribute("1") == false and Tower.Replicator:GetAttribute("Upgrade") >= 2 then
-					game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"]= Tower ,["Name"] = "Call Of Arms"})
-					Status[Info].Text = "Commander "..Info..": Actived"
+					game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+					Status(Info,"Commander "..Info..": Actived")
 					task.wait(10.01)
-					Status[Info].Text = "Commander "..Info..": Waiting"
+					Status(Info,"Commander "..Info..": Waiting")
 				else
-					Status[Info].Text = "Commander "..Info..": Stunning"
-					repeat task.wait() 
+					Status(Info,"Commander "..Info..": Stunning")
+					repeat wait() 
 					until not Tower.Replicator.Stuns:GetAttribute("1") or Tower.Replicator.Stuns:GetAttribute("1") == false
-					game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"]= Tower ,["Name"] = "Call Of Arms"})
-					Status[Info].Text = "Commander "..Info..": Actived"
+					game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+					Status(Info,"Commander "..Info..": Actived")
 					task.wait(10.01)
-					Status[Info].Text = "Commander "..Info..": Waiting"
+					Status(Info,"Commander "..Info..": Waiting")
 				end
 			elseif Tower.Replicator:GetAttribute("Upgrade") < 2 then
-				Status[Info].Text = "Commander "..Info..": Low Level"
-				task.wait(10.01)
-				Status[Info].Text = "Commander "..Info..": Waiting"
+				local OldTime = os.clock()
+				local Times,Exec = 0,0
+				repeat
+					task.spawn(function()
+						if Tower:FindFirstChild("AnimationController") then
+							Status(Info,"Commander "..Info..": Low Level")
+						else
+							Status(Info,"Commander "..Info..": Skipping")
+						end
+						game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+						Exec = Exec + 1
+					end)
+					Times = Times + 2.5
+					--prints(Times)
+					task.wait(.242)
+				until (Tower:FindFirstChild("AnimationController") and tostring(Tower:FindFirstChild("AnimationController"):GetPlayingAnimationTracks()[4]) == "Stance") or Times >= 99
+				--local TimeNeed = math.floor((os.clock() - OldTime)*100+0.5)/100
+				local TimeLost = os.clock() - OldTime
+				--prints(," Time:",os.clock() - OldTime)
+				if Tower:FindFirstChild("AnimationController") and tostring(Tower:FindFirstChild("AnimationController"):GetPlayingAnimationTracks()[4]) == "Stance" then
+					Status(Info,"Commander "..Info..": Actived")
+					task.wait(10-0.24)
+				end
+				if (os.clock() - OldTime) < 9.999 then
+					prints("Time Lower:",os.clock() - OldTime)
+					task.wait(0.025)
+				end
+				local TimeTotal = os.clock() - OldTime
+				Status(Info,"Commander "..Info..": Waiting")
+				prints("Total Time:",TimeTotal,"Execute:",Exec)
+				prints("Time Waiting",TimeTotal-TimeLost,"Time Lost",TimeLost)
 			end
 		else
-			Status[Info].Text = "Commander "..Info..": Skipping"
+			Status(Info,"Commander "..Info..": Skipping")
 			task.wait(10.01)
-			Status[Info].Text = "Commander "..Info..": Waiting"
+			Status(Info,"Commander "..Info..": Waiting")
+		end
+		if not Status(Type) and (Info == 3 or Info == 6) then
+			local Info = Info - 2
+			Status(Info,"Commander "..Info..": Prepare")
 		end
 	end
 	task.spawn(function()
 		while task.wait() do
 			if w.flags.autochain and not CancelLoop then
-				Chain(troops["Commander1"][2],troops["Commander1"][1])
-				Chain(troops["Commander2"][2],troops["Commander2"][1])
-				Chain(troops["Commander3"][2],troops["Commander3"][1])
+				Chain(troops[1],"autochain")
+				Chain(troops[2],"autochain")
+				Chain(troops[3],"autochain")
 			elseif CancelLoop then
 				CancelLoop = false
 				break
@@ -316,9 +495,9 @@ function Double()
 	task.spawn(function()
 		while task.wait() do
 			if w.flags.autochain1 and not CancelLoop then
-				Chain(troops["Commander4"][2],troops["Commander4"][1])
-				Chain(troops["Commander5"][2],troops["Commander5"][1])
-				Chain(troops["Commander6"][2],troops["Commander6"][1])
+				Chain(troops[4],"autochain1")
+				Chain(troops[5],"autochain1")
+				Chain(troops[6],"autochain1")
 			elseif CancelLoop then
 				CancelLoop = false
 				break
