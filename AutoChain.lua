@@ -144,7 +144,7 @@ function Single()
 		end
 	end
 	for i,v in pairs(game:GetService("Workspace").Towers:GetChildren()) do
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
 			prints(v,"Added1")
 			--SelectedTower(v,true)
 			task.spawn(SelectedTower,v,true)
@@ -155,14 +155,14 @@ function Single()
 		if not v:FindFirstChild("Replicator") then
 			repeat wait() until v:FindFirstChild("Replicator")
 		end
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
 			prints("TowerAdded",v,"Added")
 			--SelectedTower(v,true)
 			task.spawn(SelectedTower,v,true)
 		end
 	end)
 	getgenv().TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
 			prints("TowerRemoved",v,"Removed")
 			--SelectedTower(v,false)
 			task.spawn(SelectedTower,v,false)
@@ -385,7 +385,7 @@ function Double()
 		end
 	end
 	for i,v in pairs(game:GetService("Workspace").Towers:GetChildren()) do
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
 			prints(v,"Added1")
 			--SelectedTower(v,true,CheckDistant(v))
 			task.spawn(SelectedTower,v,true,CheckDistant(v))
@@ -396,14 +396,14 @@ function Double()
 		if not v:FindFirstChild("Replicator") then
 			repeat wait() until v:FindFirstChild("Replicator")
 		end
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
 			prints("TowerAdded",v,"Added")
 			--SelectedTower(v,true,CheckDistant(v))
 			task.spawn(SelectedTower,v,true,CheckDistant(v))
 		end
 	end)
 	getgenv().TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
-		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and v.Replicator:GetAttribute("Type") == "Commander" then
+		if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
 			prints("TowerRemoved",v,"Removed")
 			--SelectedTower(v,false)
 			task.spawn(SelectedTower,v,false)
