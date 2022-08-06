@@ -1,0 +1,358 @@
+if game.PlaceId ~= 5591597781 then return end
+getgenv().KeepTracking = true	--Recommended turn this on.
+getgenv().DebugModes = true
+if not getgenv().troops then
+	getgenv().troops = {		--Contain number and tower instance
+		[1] = {1},
+		[2] = {2},
+		[3] = {3},
+		[4] = {4},
+		[5] = {5},
+		[6] = {6}
+	}
+end
+function prints(...)
+	if DebugModes then
+		return print(...)
+	else
+		return
+	end
+end
+if KeepTracking and typeof(getgenv().TowerAdded) == "RBXScriptConnection" and typeof(getgenv().TowerRemoved) == "RBXScriptConnection" then
+	prints("deleted TowerAdded,TowerRemoved")
+	getgenv().TowerAdded:Disconnect()
+	getgenv().TowerRemoved:Disconnect()
+end
+local OldNamecall
+local Random,Height = 0,10
+local MedicTab = {}
+local StatusTable = {}
+local MaxDistant = 15
+local CancelLoop = false
+getgenv().TowerAdded = nil
+getgenv().TowerRemoved = nil
+local FirstCom = true
+local GetMouse = LocalPlayer:GetMouse()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
+local w = library:CreateWindow('TDS Toolkit')
+local Toggle = w:Toggle('Auto Chain Main', {flag = "autochain"},function(value) StatusTable["autochain"] = value end)
+local Toggle = w:Toggle('Auto Chain Group 2', {flag = "autochain1"},function(value) StatusTable["autochain1"] = value end)
+local Toggle = w:Toggle('Auto Skip', {flag = "autoskip"})
+local Toggle = w:Toggle('Auto Delete Farm', {flag = "autodelfarm"})
+local Toggle = w:Toggle('Auto Replace Medic', {flag = "automedic"})
+local Toggle = w:Toggle('Toggle Click Ability', {flag = "clickabili"})
+w:Section('Set Tower Height')
+w:Slider("Height", {
+    default = 5,
+    min = -5,
+    max = 20,
+},function(v)
+    Height = v
+end)
+local Toggle = w:Toggle('Random Height', {flag = "ranheig"})
+local Toggle = w:Toggle('Toggle Height', {flag = "heig"})
+local ww = library:CreateWindow('Infomation')
+ww:Section('Main Group')
+ww:Section('Commander 1: None')
+ww:Section('Commander 2: None')
+ww:Section('Commander 3: None')
+ww:Section('Group 2')
+ww:Section('Commander 4: None')
+ww:Section('Commander 5: None')
+ww:Section('Commander 6: None')
+task.spawn(function()
+    --GetMouse.Button1Down:connect(function()
+    game:GetService("UserInputService").InputBegan:Connect(function()
+        if w.flags.clickabili then
+            if not game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.X) then return end
+            local GetTowerNeed = GetMouse.Target
+            if GetTowerNeed then
+                repeat task.wait()
+                    GetTowerNeed = GetTowerNeed.Parent
+                    prints(GetTowerNeed)
+                    if GetTowerNeed == workspace then
+                        break
+                    end
+                until GetTowerNeed and GetTowerNeed:IsA("Model") and GetTowerNeed.Parent.Name == "Towers"
+            end
+            prints(GetTowerNeed,1)
+            if GetTowerNeed and GetTowerNeed ~= workspace then
+                if GetTowerNeed:FindFirstChild("Owner") and GetTowerNeed:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and GetTowerNeed.Replicator:GetAttribute("Type") == "Commander" then
+                    ReplicatedStorage:WaitForChild("RemoteFunction"):InvokeServer("Troops","Abilities","Activate",{["Troop"] = GetTowerNeed ,["Name"] = "Call Of Arms"})
+                elseif GetTowerNeed:FindFirstChild("Owner") and GetTowerNeed:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and GetTowerNeed.Replicator:GetAttribute("Type") == "Gladiator" then
+                    ReplicatedStorage:WaitForChild("RemoteFunction"):InvokeServer("Troops","Abilities","Activate",{["Troop"] = GetTowerNeed ,["Name"] = "Warrior's Call"})
+                elseif GetTowerNeed:FindFirstChild("Owner") and GetTowerNeed:FindFirstChild("Owner").Value == game:GetService("Players").LocalPlayer and GetTowerNeed.Replicator:GetAttribute("Type") == "Swarmer" then
+                    ReplicatedStorage:WaitForChild("RemoteFunction"):InvokeServer("Troops","Abilities","Activate",{["Troop"] = GetTowerNeed ,["Name"] = "Swarm"})
+                end
+            end
+        end
+    end)
+end)
+task.spawn(function()
+    while wait(.05) do
+        if w.flags.autodelfarm and ReplicatedStorage.State.Mode.Value == "Survival" and ReplicatedStorage.State.Wave.Value == 40 then
+            wait(.5)
+            for i,v in pairs(game:GetService("Workspace").Towers:GetChildren()) do
+                if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Farm" then
+                    ReplicatedStorage:WaitForChild("RemoteFunction"):InvokeServer("Troops", "Sell", {["Troop"] = v})
+                end
+            end
+            wait()
+            break
+        elseif w.flags.autodelfarm and ReplicatedStorage.State.Mode.Value == "Hardcore" and ReplicatedStorage.State.Wave.Value == 50 then
+            wait(.5)
+            for i,v in pairs(game:GetService("Workspace").Towers:GetChildren()) do
+                if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Farm" then
+                    ReplicatedStorage:WaitForChild("RemoteFunction"):InvokeServer("Troops", "Sell", {["Troop"] = v})
+                end
+            end
+            wait()
+            break
+        end
+    end
+end)
+task.spawn(function()
+    while wait(.5) do
+        if w.flags.autoskip and ReplicatedStorage.State.Voting.Enabled.Value == true then
+            ReplicatedStorage.RemoteEvent:FireServer("Waves","Skip")
+        end
+    end
+end)
+for i,v in pairs(game.CoreGui:GetDescendants()) do
+    if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text:match("Commander") and v.Text:match("None") then
+        StatusTable[tonumber(v.Text:match("%d+"))] = v
+    end
+end
+local function Status(Index,Text)
+    if not StatusTable then
+        return
+    elseif StatusTable[Index] == nil then
+        return prints(Index,"Doesn't existed")
+    else
+        if type(Text) == "string" then
+            StatusTable[Index].Text = tostring(Text)
+            return
+        else 
+            return StatusTable[Index]
+        end
+    end
+end
+for i,v in next,troops do
+    local Values = v[2]
+    if Values and Status(i) then
+        prints("Status",i,v[2])
+        Status(i,"Commander "..i..": Selected")
+    end
+end
+function SelectedTower(Tower,Value,Group)
+    --prints(Tower,Value,Group)
+    if Value == true then --Select Tower
+        if Group == 0 or Group == nil then
+            return
+        end
+        for i,v in ipairs(troops) do
+            if not v[2] then
+                if Group == 1 and i <= 3 then
+                    --prints("SelectedTower()","Group1:",i)
+                    table.insert(troops[i],2,Tower)
+                    Status(i,"Commander "..i..": Selected")
+                    return
+                elseif Group == 2 and 4 <= i and i <= 6 then
+                    --prints("SelectedTower()","Group2:",i)
+                    table.insert(troops[i],2,Tower)
+                    Status(i,"Commander "..i..": Selected")
+                    return
+                end
+            end
+        end
+    elseif Value == false then --Remove Tower
+        for i,v in next,troops do
+            local Values = v[2]
+            if Values == Tower then
+                table.remove(troops[i],2)
+                Status(i,"Commander "..i..": None")
+            end
+        end
+    end
+end
+function CheckDistant(Tower1) --Tower1: Tower Will Be Checked
+    for i=1,#troops do
+        if Tower1 == troops[i][2] then
+            prints("CheckDistant()",Tower1,"Already Existed")
+            return 0
+        end
+    end
+    local Tower2 = troops[1][2] or troops[2][2] or troops[3][2]
+    if Tower2 and Tower2:FindFirstChild("Torso") and Tower2:FindFirstChild("Torso") then
+        if troops[1][2] and troops[2][2] and troops[3][2] then
+            return 2
+        elseif troops[4][2] and troops[5][2] and troops[6][2] and not (troops[1][2] and troops[2][2] and troops[3][2]) then
+            return 1
+        elseif (Tower1.Torso.Position*Vector3.new(1, 0, 1) - Tower2.Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant then --First Group
+            return 1
+        elseif (Tower1.Torso.Position*Vector3.new(1, 0, 1) - Tower2.Torso.Position*Vector3.new(1, 0, 1)).magnitude > MaxDistant then --Second Group
+            return 2
+        end
+    elseif not Tower2 then
+        Tower2 = troops[4][2] or troops[5][2] or troops[6][2]
+        if Tower2 and Tower2:FindFirstChild("Torso") and Tower2:FindFirstChild("Torso") then
+            if troops[4][2] and troops[5][2] and troops[6][2] then
+                return 1
+            elseif (Tower1.Torso.Position*Vector3.new(1, 0, 1) - Tower2.Torso.Position*Vector3.new(1, 0, 1)).magnitude <= MaxDistant then --First Group
+                return 2
+            elseif (Tower1.Torso.Position*Vector3.new(1, 0, 1) - Tower2.Torso.Position*Vector3.new(1, 0, 1)).magnitude > MaxDistant then --Second Group
+                return 1
+            end
+        elseif not Tower2 then --When there are no more towers to check
+            return 1
+        end
+    end
+end
+for i,v in pairs(game:GetService("Workspace").Towers:GetChildren()) do
+    if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
+        prints(v,"Added1")
+        --SelectedTower(v,true,CheckDistant(v))
+        task.spawn(SelectedTower,v,true,CheckDistant(v))
+    end
+end
+getgenv().TowerAdded = game:GetService("Workspace").Towers.ChildAdded:Connect(function(v)
+    wait(.25)
+    if not v:FindFirstChild("Replicator") then
+        repeat wait() until v:FindFirstChild("Replicator")
+    end
+    if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
+        prints("TowerAdded",v,"Added")
+        --SelectedTower(v,true,CheckDistant(v))
+        task.spawn(SelectedTower,v,true,CheckDistant(v))
+    end
+end)
+getgenv().TowerRemoved = game:GetService("Workspace").Towers.ChildRemoved:Connect(function(v)
+    if v:FindFirstChild("Owner").Value and v:FindFirstChild("Owner").Value == LocalPlayer.UserId and v.Replicator:GetAttribute("Type") == "Commander" then
+        prints("TowerRemoved",v,"Removed")
+        --SelectedTower(v,false)
+        task.spawn(SelectedTower,v,false)
+    end
+    task.wait()
+end)
+local function Chain(Tower,Type)
+    if CancelLoop then
+        prints("CancelLoop 2",CancelLoop)
+        return 
+    end
+    local Info = Tower[1]
+    if not Status(Type) then
+        Status(Info,"Commander "..Info..": Prepare")
+        repeat task.wait() until Status(Type)
+    end
+    local Tower = Tower[2]
+    if Tower then
+        if Tower.Replicator:GetAttribute("Upgrade") >= 2 then
+            if not Tower.Replicator.Stuns:GetAttribute("1") or Tower.Replicator.Stuns:GetAttribute("1") == false and Tower.Replicator:GetAttribute("Upgrade") >= 2 then
+                game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+                Status(Info,"Commander "..Info..": Actived")
+                task.wait(10.01)
+                Status(Info,"Commander "..Info..": Waiting")
+            else
+                Status(Info,"Commander "..Info..": Stunning")
+                repeat wait() 
+                until not Tower.Replicator.Stuns:GetAttribute("1") or Tower.Replicator.Stuns:GetAttribute("1") == false
+                game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+                Status(Info,"Commander "..Info..": Actived")
+                task.wait(10.01)
+                Status(Info,"Commander "..Info..": Waiting")
+            end
+        elseif Tower.Replicator:GetAttribute("Upgrade") < 2 then
+            local OldTime = os.clock()
+            local Times,Exec = 0,0
+            repeat
+                task.spawn(function()
+                    if Tower:FindFirstChild("AnimationController") then
+                        Status(Info,"Commander "..Info..": Low Level")
+                    else
+                        Status(Info,"Commander "..Info..": Skipping")
+                    end
+                    game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("Troops","Abilities","Activate",{["Troop"] = Tower ,["Name"] = "Call Of Arms"})
+                    Exec = Exec + 1
+                end)
+                Times = Times + 2.5
+                --prints(Times)
+                task.wait(.242)
+            until (Tower:FindFirstChild("AnimationController") and tostring(Tower:FindFirstChild("AnimationController"):GetPlayingAnimationTracks()[4]) == "Stance") or Times >= 99
+            --local TimeNeed = math.floor((os.clock() - OldTime)*100+0.5)/100
+            local TimeLost = os.clock() - OldTime
+            --prints(," Time:",os.clock() - OldTime)
+            if Tower:FindFirstChild("AnimationController") and tostring(Tower:FindFirstChild("AnimationController"):GetPlayingAnimationTracks()[4]) == "Stance" then
+                Status(Info,"Commander "..Info..": Actived")
+                task.wait(10-0.24)
+            end
+            if (os.clock() - OldTime) < 9.999 then
+                prints("Time Lower:",os.clock() - OldTime)
+                task.wait(0.025)
+            end
+            local TimeTotal = os.clock() - OldTime
+            Status(Info,"Commander "..Info..": Waiting")
+            prints("Total Time:",TimeTotal,"Execute:",Exec)
+            prints("Time Waiting",TimeTotal-TimeLost,"Time Lost",TimeLost)
+        end
+    else
+        Status(Info,"Commander "..Info..": Skipping")
+        task.wait(10.01)
+        Status(Info,"Commander "..Info..": Waiting")
+    end
+    if not Status(Type) and (Info == 3 or Info == 6) then
+        local Info = Info - 2
+        Status(Info,"Commander "..Info..": Prepare")
+    end
+end
+task.spawn(function()
+    while task.wait() do
+        if w.flags.autochain and not CancelLoop then
+            Chain(troops[1],"autochain")
+            Chain(troops[2],"autochain")
+            Chain(troops[3],"autochain")
+        elseif CancelLoop then
+            CancelLoop = false
+            break
+        end
+    end
+end)
+task.spawn(function()
+    while task.wait() do
+        if w.flags.autochain1 and not CancelLoop then
+            Chain(troops[4],"autochain1")
+            Chain(troops[5],"autochain1")
+            Chain(troops[6],"autochain1")
+        elseif CancelLoop then
+            CancelLoop = false
+            break
+        end
+    end
+end)
+OldNamecall = hookmetamethod(game, "__namecall", function(...)
+    local Self, Args = (...), ({select(2, ...)})
+    local Namecall = getnamecallmethod()
+    if not checkcaller() and Namecall == "InvokeServer" and tostring(Args[2]) == "Abilities" and tostring(Args[4]["Name"]) == "Cleansing" and ReplicatedStorage.State.Wave.Value >= 38 and w.flags.automedic then
+        task.spawn(function()
+            local GetTower = Args[4]["Troop"]
+            local GetPos = GetTower:FindFirstChild("HumanoidRootPart").Position
+            wait(.1)
+            ReplicatedStorage:WaitForChild("RemoteFunction"):InvokeServer("Troops", "Sell", {["Troop"] = GetTower})
+            firesignal(LocalPlayer.PlayerGui.GameGui.Upgrade.Default.Primary.Container.Content.Close.MouseButton1Click)
+            wait(.25)
+            --repeat wait() until tonumber(""..string.gsub(game:GetService("Players").LocalPlayer.PlayerGui.GameGui.Hotbar.Stats.Cash.Amount.Text, "%D", "")) >= 15500
+            ReplicatedStorage:WaitForChild("RemoteFunction"):InvokeServer("Troops", "Place", "Medic", {["Rotation"] = CFrame.new(0, 0, 0) * CFrame.Angles(-0, 0, -0), ["Position"] = GetPos})
+            --ReplicatedStorage:WaitForChild("RemoteFunction"):InvokeServer("Troops", "Upgrade","Set", {["Troop"] = GetTower})
+        end)
+    elseif not checkcaller() and Namecall == "InvokeServer" and tostring(Args[2]) == "Place" and w.flags.heig and (tostring(Args[3]) ~= "Gladiator" and tostring(Args[3]) ~= "Sledger"and tostring(Args[3]) ~= "Slasher") then
+        task.spawn(function()
+            local Pos = Args[4]["Position"]
+            local Rota = Args[4]["Rotation"]
+            if w.flags.ranheig then
+                Args[4] = {["Rotation"] = Rota + Vector3.new(0,tonumber(math.random(500, 2000)/100),0),["Position"] = Pos}
+            else
+                Args[4] = {["Rotation"] = Rota + Vector3.new(0,tonumber(Height),0),["Position"] = Pos}
+            end
+        end)
+    end
+    return OldNamecall(...,unpack(Args))
+end)
