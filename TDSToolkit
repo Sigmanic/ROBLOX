@@ -39,8 +39,8 @@ local Toggle = w:Toggle('Auto Chain Main', {flag = "autochain"},function(value) 
 local Toggle = w:Toggle('Auto Chain Group 2', {flag = "autochain1"},function(value) StatusTable["autochain1"] = value end)
 local Toggle = w:Toggle('Auto Skip', {flag = "autoskip"})
 local Toggle = w:Toggle('Auto Delete Farm', {flag = "autodelfarm"})
-local Toggle = w:Toggle('Auto Replace Medic', {flag = "automedic"})
-local Toggle = w:Toggle('Toggle Click Ability', {flag = "clickabili"})
+local Toggle = w:Toggle('Auto Replace Medic[NOT WORKING]', {flag = "automedic"})
+local Toggle = w:Toggle('Press X To Ability[NOT WORKING]', {flag = "clickabili"})
 w:Section('Set Tower Height')
 w:Slider("Height", {
     default = 5,
