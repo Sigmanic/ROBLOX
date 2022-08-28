@@ -272,7 +272,7 @@ local defaults; do
             library:Create('TextBox', {
                 Text = "";
                 PlaceholderText = text;
-		PlaceholderColor3 = Color3.fromRGB(60, 60, 60);
+        PlaceholderColor3 = Color3.fromRGB(60, 60, 60);
                 Size = UDim2.new(1, -10, 0, 20);
                 Position = UDim2.new(0, 5, 0, 4);
                 BackgroundColor3 = library.options.boxcolor;
@@ -311,7 +311,7 @@ local defaults; do
 
                     BorderSizePixel = 0;
                     TextStrokeTransparency = library.options.textstroke;
-					BackgroundTransparency = 0.5;
+                    BackgroundTransparency = 0.5;
                     TextStrokeColor3 = library.options.strokecolor;
                     TextColor3 = library.options.textcolor;
                     Position = UDim2.new(0, 5, 0, 5);
@@ -342,11 +342,15 @@ local defaults; do
             local min      = options.min or 0;
             local max      = options.max or 9e9;
 
-            if type == 'number' and (not tonumber(default)) then
-                location[flag] = default;
+            if type == 'number' then
+                if (tonumber(default)) then
+                    location[flag] = default;
+                else
+                    location[flag] = "";
+                    default = "";
+                end
             else
-                location[flag] = "";
-                default = "";
+                location[flag] = default;
             end
 
             local check = library:Create('Frame', {
@@ -479,7 +483,7 @@ local defaults; do
                 });
                 Parent = self.container;
             });
-             
+            
             local button = check:FindFirstChild(name).Keybind;
             button.MouseButton1Click:connect(function()
                 library.binding = true
@@ -731,7 +735,7 @@ local defaults; do
             local flag = options.flag or "";
             local location = options.location or self.flags;
             local callback = callback or function() end;
- 
+
             local busy = false;
             local box = library:Create('Frame', {
                 BackgroundTransparency = 1;
@@ -768,7 +772,7 @@ local defaults; do
                 });
                 Parent = self.container;
             })
- 
+
             local function rebuild(text)
                 box:FindFirstChild('Box').Container.ScrollBarThickness = 0
                 for i, child in next, box:FindFirstChild('Box').Container:GetChildren() do
@@ -776,7 +780,7 @@ local defaults; do
                         child:Destroy();
                     end
                 end
- 
+
                 if #text > 0 then
                     for i, v in next, list do
                         if string.sub(string.lower(v), 1, string.len(text)) == string.lower(text) then
@@ -794,16 +798,16 @@ local defaults; do
                                 BackgroundColor3 = library.options.btncolor;
                                 ZIndex = 2;
                             })
- 
+
                             button.MouseButton1Click:connect(function()
                                 busy = true;
                                 box:FindFirstChild('Box').Text = button.Text;
                                 wait();
                                 busy = false;
- 
+
                                 location[flag] = button.Text;
                                 callback(location[flag])
- 
+
                                 box:FindFirstChild('Box').Container.ScrollBarThickness = 0
                                 for i, child in next, box:FindFirstChild('Box').Container:GetChildren() do
                                     if (not child:IsA('UIListLayout')) then
@@ -815,25 +819,25 @@ local defaults; do
                         end
                     end
                 end
- 
+
                 local c = box:FindFirstChild('Box').Container:GetChildren()
                 local ry = (20 * (#c)) - 20
- 
+
                 local y = math.clamp((20 * (#c)) - 20, 0, 100)
                 if ry > 100 then
                     box:FindFirstChild('Box').Container.ScrollBarThickness = 5;
                 end
- 
+
                 box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, y), 'Out', 'Quad', 0.25, true)
                 box:FindFirstChild('Box').Container.CanvasSize = UDim2.new(1, 0, 0, (20 * (#c)) - 20)
             end
- 
+
             box:FindFirstChild('Box'):GetPropertyChangedSignal('Text'):connect(function()
                 if (not busy) then
                     rebuild(box:FindFirstChild('Box').Text)
                 end
             end);
- 
+
             local function reload(new_list)
                 list = new_list;
                 rebuild("")
