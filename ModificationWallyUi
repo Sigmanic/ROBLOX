@@ -260,7 +260,7 @@ local defaults; do
             }
         end
 
-    function types:AddBox(name, options, callback)
+    function types:AddBox(text, options, callback)
         local location = options.location or self.flags;
         local flag     = options.flag or "";
         local callback = callback or function() end;
@@ -272,6 +272,7 @@ local defaults; do
             library:Create('TextBox', {
                 Text = "";
                 PlaceholderText = text;
+		PlaceholderColor3 = library.options.placeholdercolor;
                 Size = UDim2.new(1, -10, 0, 20);
                 Position = UDim2.new(0, 5, 0, 4);
                 BackgroundColor3 = library.options.boxcolor;
