@@ -783,7 +783,7 @@ local defaults; do
 
                 if #text > 0 then
                     for i, v in next, list do
-                        if string.sub(string.lower(v), 1, string.len(text)) == string.lower(text) then
+                        if string.sub(string.lower(v), 1, string.len(text)) == string.lower(text) or v:lower():match(text:lower()) then
                             local button = library:Create('TextButton', {
                                 Text = v;
                                 Font = library.options.font;
