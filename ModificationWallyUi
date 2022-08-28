@@ -260,31 +260,41 @@ local defaults; do
             }
         end
 
-       function types:AddBox(text, callback)
-		callback = callback or function() end
+    function types:AddBox(name, options, callback)
+        local location = options.location or self.flags;
+        local flag     = options.flag or "";
+        local callback = callback or function() end;
 
-		local box = library:Create("TextBox", {
-			PlaceholderText = text,
-			Size = UDim2.new(1, -10, 0, 20),
-			BackgroundTransparency = 0.75,
-			BackgroundColor3 = library.options.boxcolor,
-			TextColor3 = Color3.fromRGB(255, 255, 255),
-			TextXAlignment = Enum.TextXAlignment.Center,
-			TextSize = 16,
-			Text = "",
-			Font = Enum.Font.SourceSans,
-			LayoutOrder = self:GetOrder();
-			BorderSizePixel = 0,
-			Parent = self.container,
-		})
-
-		box.FocusLost:connect(function(...)
-			callback(box, ...)
-		end)
-
-		self:Resize()
-		return box
-	end
+        local check = library:Create('Frame', {
+            BackgroundTransparency = 1;
+            Size = UDim2.new(1, 0, 0, 25);
+            LayoutOrder = self:GetOrder();
+            library:Create('TextBox', {
+                Text = "";
+                PlaceholderText = text;
+                Size = UDim2.new(1, -10, 0, 20);
+                Position = UDim2.new(0, 5, 0, 4);
+                BackgroundColor3 = library.options.boxcolor;
+                TextColor3 = library.options.textcolor;
+                TextXAlignment = Enum.TextXAlignment.Center;
+                TextSize = library.options.fontsize;
+                Name = 'TextBox';
+                Font = library.options.font;
+                BorderColor3 = library.options.bordercolor;
+                TextStrokeTransparency = library.options.textstroke;
+                TextStrokeColor3 = library.options.strokecolor;
+            });
+            Parent = self.container;
+        });
+        local box = check:FindFirstChild(name):FindFirstChild('TextBox');
+        box.FocusLost:connect(function(e)
+            local old = location[flag];
+            location[flag] = tostring(box.Text)
+            callback(location[flag], old, e)
+        end)
+        self:Resize();
+        return box
+    end
 
         function types:Button(name, callback)
             callback = callback or function() end;
