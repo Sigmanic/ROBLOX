@@ -286,7 +286,7 @@ local defaults; do
             });
             Parent = self.container;
         });
-        local box = check:FindFirstChild(name):FindFirstChild('TextBox');
+        local box = check:FindFirstChild('TextBox');
         box.FocusLost:connect(function(e)
             local old = location[flag];
             location[flag] = tostring(box.Text)
