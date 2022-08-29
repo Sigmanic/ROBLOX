@@ -802,7 +802,7 @@ local defaults; do
                             button.MouseButton1Click:connect(function()
                                 busy = true;
                                 box:FindFirstChild('Box').Text = button.Text;
-                                wait();
+                                task.wait();
                                 busy = false;
 
                                 location[flag] = button.Text;
@@ -831,6 +831,24 @@ local defaults; do
                 box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, y), 'Out', 'Quad', 0.25, true)
                 box:FindFirstChild('Box').Container.CanvasSize = UDim2.new(1, 0, 0, (20 * (#c)) - 20)
             end
+
+            local check = box:FindFirstChild('Box');
+            check.FocusLost:connect(function(e)
+                wait()
+                if (not busy) and check.Text == "" then
+                    location[flag] = tostring(check.Text);
+                    callback(location[flag])
+                end
+                wait(.1)
+
+                box:FindFirstChild('Box').Container.ScrollBarThickness = 0
+                for i, child in next, box:FindFirstChild('Box').Container:GetChildren() do
+                    if (not child:IsA('UIListLayout')) then
+                        child:Destroy();
+                    end
+                end
+                box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quad', 0.25, true)
+            end);
 
             box:FindFirstChild('Box'):GetPropertyChangedSignal('Text'):connect(function()
                 if (not busy) then
