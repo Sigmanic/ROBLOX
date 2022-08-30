@@ -485,7 +485,7 @@ s:Button("Apply",function()
         writefile("StratLoader\\UserConfig\\FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
     end
 end)
-s:Button("MeMayBeo Feature")
+--s:Button("MeMayBeo Feature")
 --[[w:Section("Status:")
 w:Section("Strat: Coins")
 
@@ -508,7 +508,7 @@ w:Button("Delete Gui",function()
 end)
 Changelog = {"New Ui","Fixed Delay","New Way To Organize"}
 
-d:Section("Version: 0.2 Dev-Beta")
+d:Section("Version: 0.3 Dev-Beta")
 d:Button("Changelog:")
 for i = 1,#Changelog do
     if type(Changelog[i]) == "string" then
