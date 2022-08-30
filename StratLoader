@@ -1,4 +1,4 @@
-[[repeat wait() until game:IsLoaded()
+repeat wait() until game:IsLoaded()
 local OldTime = os.clock()
 if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
 local LoadInfo = [[
@@ -28,6 +28,10 @@ getgenv().FeatureConfig = {
     },
     ["GPULimit"] = false
 }
+
+if not isfolder("StratLoader") then
+    makefolder("Strat\\UserConfig")
+end
 if isfile("StratLoader\\UserConfig\\Config.txt") then
     getgenv().Config = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader\\UserConfig\\Config.txt"))
 else
@@ -512,4 +516,3 @@ for i = 1,#Changelog do
     end
 end
 print("Time Loaded:",os.clock() - OldTime())
-]]
