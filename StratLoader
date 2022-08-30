@@ -271,6 +271,8 @@ function GetPlayersList(name)
     end
     return namelist
 end
+local Version = "Version: 0.3.1 Dev-Beta"
+local Changelog = {"New Ui","Fixed Delay","Fixxed Strat Name Box","Added Re-Execute Button"}
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 local w = library:CreateWindow('Strat Loader')
 local s = library:CreateWindow('Feature Settings')
@@ -293,12 +295,12 @@ end)
 w:Section("Choose Strat")
 w:SearchBox("Strat Name", {
     flag = "StratFullName",
-    list = GetFilesName("StratLoader","UserConfig")
+    list = GetFilesName("StratLoader","UserConfig",false)
 },function()
     print(w.flags.StratFullName)
 end)
 w:Section("Add Players Same Config")
-w:AddBox("PlayerName",{flag = "plrname"},function(value)
+w:AddBox("Player Name",{flag = "plrname"},function(value)
     if #string.gsub(value, "%s*%p*", "") > 0 then
         --if (value:match(" ") or value:match(",")) then
         local str = string.gsub(tostring(value),","," ")
@@ -429,6 +431,7 @@ w:Button("Start",function()
         Loader()
     end
 end)
+
 w:Button("Print Config",function()
     for i,v in next,getgenv().Config do
         if type(v) == "table" then
@@ -439,6 +442,14 @@ w:Button("Print Config",function()
             print(i,v)
         end
     end
+end)
+w:Button("Re-Execute",function()
+    for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if v:IsA("Frame") and v.Name == "Strat Loader" then
+            v.Parent.Parent:Destroy()
+        end
+    end
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/StratLoader", true))()
 end)
 s:Toggle("Enable GPU Limit",{flag= "gpulimit"})
 s:Section("Join Less Feature")
@@ -506,9 +517,8 @@ w:Button("Delete Gui",function()
         end
     end
 end)
-Changelog = {"New Ui","Fixed Delay","New Way To Organize"}
 
-d:Section("Version: 0.2 Dev-Beta")
+d:Section(Version)
 d:Button("Changelog:")
 for i = 1,#Changelog do
     if type(Changelog[i]) == "string" then
