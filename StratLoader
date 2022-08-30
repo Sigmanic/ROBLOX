@@ -30,7 +30,7 @@ getgenv().FeatureConfig = {
 }
 
 if not isfolder("StratLoader") then
-    makefolder("Strat\\UserConfig")
+    makefolder("StratLoader\\UserConfig")
 end
 if isfile("StratLoader\\UserConfig\\Config.txt") then
     getgenv().Config = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader\\UserConfig\\Config.txt"))
