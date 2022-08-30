@@ -248,13 +248,13 @@ function Loader()
         end
         if StratName then
             loadfile(StratName)()
-            print("Time Loaded:",os.clock() - OldTime())
+            print("Time Loaded:",os.clock() - OldTime)
         else
             warn("Couldn't Find Strat Name "..GetConfig.StratName.."In StratLoader Folder.")
         end
     end
 end
-print("Library's Time Loaded:",os.clock() - OldTime())
+print("Library's Time Loaded:",os.clock() - OldTime)
 if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
     Loader()
     return
@@ -485,7 +485,7 @@ s:Button("Apply",function()
         writefile("StratLoader\\UserConfig\\FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
     end
 end)
---s:Button("MeMayBeo Feature")
+s:Button("MeMayBeo Feature")
 --[[w:Section("Status:")
 w:Section("Strat: Coins")
 
@@ -508,11 +508,11 @@ w:Button("Delete Gui",function()
 end)
 Changelog = {"New Ui","Fixed Delay","New Way To Organize"}
 
-d:Section("Version: 0.3 Dev-Beta")
+d:Section("Version: 0.2 Dev-Beta")
 d:Button("Changelog:")
 for i = 1,#Changelog do
     if type(Changelog[i]) == "string" then
         d:Section(Changelog[i])
     end
 end
-print("Time Loaded:",os.clock() - OldTime())
+print("Time Loaded:",os.clock() - OldTime)
