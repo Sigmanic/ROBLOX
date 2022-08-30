@@ -233,7 +233,7 @@ function Loader()
         local GetConfig = Config[game:GetService("Players").LocalPlayer.Name]
         local StratName = GetFilePath("StratLoader",GetConfig.StratName)
         local Limit = GetConfig.Limit
-        if GameId == 3260590327 and Limit and tonumber(game:GetService("Players").LocalPlayer:WaitForChild(GetConfig.TypeLimit).Value) >= GetConfig.Amount then
+        if game.PlaceId == 3260590327 and Limit and tonumber(game:GetService("Players").LocalPlayer:WaitForChild(GetConfig.TypeLimit).Value) >= GetConfig.Amount then
             if GetConfig.AutoRemove then
                 Config[game:GetService("Players").LocalPlayer.Name] = nil
             end
@@ -278,13 +278,13 @@ local d = library:CreateWindow('Credits')
 local PlayerName,PlayerRemove = {},""
 
 local InfoTable = {"Coins", "Gems","Level"}
-w:Section("Player: "..LocalPlayer.DisplayName.."")
+w:Section("Player: "..game:GetService("Players").LocalPlayer.DisplayName.."")
 w:Toggle("Auto Add Current User",{default = true, flag = "autoyourself"},function(bool)
     if bool then
-        table.insert(PlayerName,LocalPlayer.Name)
+        table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
     else
         for i=1,#PlayerName do
-            if PlayerName[i] == LocalPlayer.Name then
+            if PlayerName[i] == game:GetService("Players").LocalPlayer.Name then
                 table.remove(PlayerName,i)
             end
         end
@@ -305,7 +305,7 @@ w:AddBox("PlayerName",{flag = "plrname"},function(value)
         local strs = string.split(str, " ")
         PlayerName = {}
         if w.flags.autoyourself then
-            table.insert(PlayerName,LocalPlayer.Name)
+            table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
         end
         for i = 1, #strs do
             if #strs[i] > 0 then
@@ -315,7 +315,7 @@ w:AddBox("PlayerName",{flag = "plrname"},function(value)
     else
         PlayerName = {}
         if w.flags.autoyourself then
-            table.insert(PlayerName,LocalPlayer.Name)
+            table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
         end
     end
 end)
