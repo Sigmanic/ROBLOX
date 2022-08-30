@@ -1,0 +1,514 @@
+repeat wait() until game:IsLoaded()
+local OldTime = os.clock()
+if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
+local LoadInfo = [[
+    StratLoader("Name Of The Strat",
+    {"Username1","Username2","Username3","Username4"},
+    "Type Of Grindind",Amount)
+    StratLoader("scout",
+    {"Username1","fthiend999","Username3","Username4"})
+    StratLoader("Ultimate_FalMol","haigta45","Coins")
+    StratLoader("gminigunner","mIzIBiis5235")
+]]
+getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
+
+--Below here is the library of Strat Loader
+local gethiddenproperty = gethiddenproperty or gethiddenprop or get_hidden_property or get_hidden_prop or getpropvalue
+local sethiddenproperty = sethiddenproperty or sethiddenprop or set_hidden_property or set_hidden_prop or setpropvalue
+assert(readfile, 'Exploit is missing readfile function')
+assert(listfiles, 'Exploit is missing listfiles function')
+assert(isfile, 'Exploit is missing isfile function')
+getgenv().Config = {}
+getgenv().FeatureConfig = {
+    ["JoinLessFeature"] = {
+        Enabled = false;
+        ActiveWhen = 12;
+        MinPlr = 1;
+        MaxPlr = 3;
+    },
+    ["GPULimit"] = false
+}
+if isfile("StratLoader\\UserConfig\\Config.txt") then
+    getgenv().Config = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader\\UserConfig\\Config.txt"))
+else
+    writefile("StratLoader\\UserConfig\\Config.txt",cloneref(game:GetService("HttpService")):JSONEncode(Config))
+end
+if isfile("StratLoader\\UserConfig\\FeatureConfig.txt") then
+    getgenv().FeatureConfig = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader\\UserConfig\\FeatureConfig.txt"))
+else
+    writefile("StratLoader\\UserConfig\\FeatureConfig.txt",cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
+end
+
+if game.PlaceId == 3260590327 then
+    local function GetServersInfo(Placeid,MinPlr,MaxPlr,MaxPlaying)
+        local Cancel = false
+        if not Placeid then
+            Placeid = game.PlaceId
+        end
+        if not MinPlr then
+            MinPlr = 1
+        end
+        if not MaxPlr then
+            MaxPlr = 3
+        end
+        if not MaxPlaying then
+            if MaxPlr then
+                MaxPlaying = MaxPlr + 1
+            else
+                MaxPlaying = 5
+            end
+        end
+        local Servers = {}
+        local CurrentCursor = ""
+        repeat
+            local Success = pcall(function()
+                local ListRaw = game:HttpGet("https://games.roblox.com/v1/games/"..tostring(Placeid).."/servers/Public?sortOrder=Asc&limit=100&cursor="..CurrentCursor)
+                local CurrentList = game:GetService("HttpService"):JSONDecode(ListRaw) -- done in 2 steps for getting cursor later
+                for i = 1,#CurrentList.data do
+                    if CurrentList ~= nil and CurrentList.data[i].playing <= tonumber(MaxPlr) then
+                       --print(CurrentList.data[i].playing)
+                        table.insert(Servers, CurrentList.data[i])
+                    elseif CurrentList.data[i].playing > tonumber(MaxPlr)+1 then
+                        Cancel = true
+                    end
+                end
+                local CursorIndex = string.find(ListRaw, "nextPageCursor")
+                local EndComma = string.find(ListRaw, ",", CursorIndex)
+                local ToEdit = string.gsub(string.sub(ListRaw, CursorIndex, EndComma - 1), '"', "")
+                CurrentCursor = string.gsub(ToEdit, 'nextPageCursor:', "")
+            end)
+            task.wait()
+        until (CurrentCursor == "null" and Success == true) or Cancel == true
+        return Servers
+    end
+    local function TeleportHandler(Id,MinPlayers,MaxPlayers)
+        local GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
+        local FailedConnection = game:GetService("TeleportService").TeleportInitFailed:Connect(function(Player, Result, Msg)
+            if Player == game:GetService("Players").LocalPlayer then
+                if Result == Enum.TeleportResult.Unauthorized then
+                    table.remove(GetServers,IdRandom)
+                    if not GetServers[1] then 
+                        MinPlayers = MaxPlayers - 1
+                        repeat
+                            MaxPlayers = MaxPlayers + 2
+                            GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
+                            wait(.1)
+                        until GetServers[1]
+                    end
+                    IdRandom = math.random(1,#GetServers)
+                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, GetServers[IdRandom].id, game:GetService("Players").LocalPlayer)
+                end
+            end
+        end)     
+        if not GetServers[1] then
+            repeat
+                MaxPlayers = MaxPlayers + 1
+                GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
+                wait(.1)
+            until GetServers[1]
+        end
+        local IdRandom = math.random(1,#GetServers)
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, GetServers[IdRandom].id, game:GetService("Players").LocalPlayer)
+    end
+    if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active and FeatureConfig["JoinLessFeature"].Enabled and #game:GetService("Players"):GetChildren() >= FeatureConfig["JoinLessFeature"].ActiveWhen then
+        local Min = FeatureConfig["JoinLessFeature"].MinPlr
+        local Max = FeatureConfig["JoinLessFeature"].MaxPlr
+        TeleportHandler(3260590327,Min,Max)
+        return
+    end
+end
+local GetFiles = function(path,excludefile)
+    local tablefiles = {}
+    local tableexclude = {}
+    if not path then
+        path = ""
+    end
+    if type(excludefile) == "string" then
+        table.insert(tableexclude,excludefile)
+    elseif type(excludefile) == "table" then
+        tableexclude = excludefile
+    end
+    for i,v in next,listfiles(path) do
+        if v then
+            if tableexclude[1] then
+                local str
+                if path:sub(#path, #path) == "\\" then
+                    str = string.gsub(tostring(v),path,"")
+                else
+                    str = string.gsub(tostring(v),path.."\\","")
+                end
+                if not table.find(tableexclude,str) then
+                    table.insert(tablefiles,v)
+                end
+            else
+                table.insert(tablefiles,v)
+            end
+    end
+    end
+    return tablefiles
+end
+local GetFilesName = function(path,name,bool)
+    local tablefilesname = {}
+    local GetFile
+    if not path then
+        path = ""
+    end
+    if type(name) == "string" and bool == nil then
+        bool = true
+    end
+    if bool == false then
+        GetFile = GetFiles(path,name)
+    else
+        GetFile = GetFiles(path)
+    end
+    for i,v in next,GetFile do
+        if v then
+            local str
+            if path:sub(#path, #path) == "\\" then
+                str = string.gsub(tostring(v),path,"")
+            else
+                str = string.gsub(tostring(v),path.."\\","")
+            end
+            if bool and type(name) == "string" and str:lower():match(name:lower()) then
+                return str,v
+            end
+            table.insert(tablefilesname,str)
+        end
+    end
+    return tablefilesname
+end
+local GetFilePath = function(path,name)
+    local v1,v2 = GetFilesName(path,name,true)
+    if #v1 > 0 then 
+        return v2
+    else
+        return false
+    end
+end
+getgenv().MinimizeClient = function(boolean)
+    if boolean == nil then
+        boolean = true
+    end
+    if not getgenv().FirstTime then
+        getgenv().FirstTime = true
+        GlobalShadow = game:GetService("Lighting").GlobalShadows
+        PhysicsThrottle = settings().Physics.PhysicsEnvironmentalThrottle
+        if gethiddenproperty and not KRNL_LOADED then
+            TechLight = gethiddenproperty(game:GetService("Lighting"), "Technology")
+        end
+    end
+    if boolean then
+        pcall(function()
+            setfpscap(10)
+        end)
+        settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
+        if sethiddenproperty and not KRNL_LOADED then
+            sethiddenproperty(game:GetService("Lighting"), "Technology",Enum.Technology.Compatibility)
+        end
+        game:GetService("Lighting").GlobalShadows = boolean
+    else
+        pcall(function()
+            setfpscap(60)
+        end)
+        settings().Physics.PhysicsEnvironmentalThrottle = PhysicsThrottle
+        if sethiddenproperty and not KRNL_LOADED then
+            sethiddenproperty(game:GetService("Lighting"), "Technology",TechLight)
+        end
+        game:GetService("Lighting").GlobalShadows = GlobalShadow
+    end
+    game:GetService("RunService"):Set3dRenderingEnabled(not boolean)
+    for i,v in pairs(game:GetService("Lighting"):GetChildren()) do
+        if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("DepthOfFieldEffect") and v.Enabled == true then
+            v.Enabled = not boolean
+        end
+    end
+end
+
+function Loader()
+    if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
+        local GetConfig = Config[game:GetService("Players").LocalPlayer.Name]
+        local StratName = GetFilePath("StratLoader",GetConfig.StratName)
+        local Limit = GetConfig.Limit
+        if GameId == 3260590327 and Limit and tonumber(game:GetService("Players").LocalPlayer:WaitForChild(GetConfig.TypeLimit).Value) >= GetConfig.Amount then
+            if GetConfig.AutoRemove then
+                Config[game:GetService("Players").LocalPlayer.Name] = nil
+            end
+            if GetConfig.AutoShut then
+                wait()
+                game:Shutdown()
+            end
+            return
+        end
+        if FeatureConfig["GPULimit"] then
+            MinimizeClient(true)
+        end
+        if StratName then
+            loadfile(StratName)()
+            print("Time Loaded:",os.clock() - OldTime())
+        else
+            warn("Couldn't Find Strat Name "..GetConfig.StratName.."In StratLoader Folder.")
+        end
+    end
+end
+print("Library's Time Loaded:",os.clock() - OldTime())
+if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
+    Loader()
+    return
+end
+function GetPlayersList(name)
+    if type(name) ~= "table" then
+        return {}
+    end
+    local namelist = {}
+    for i,v in next,name do
+        if tostring(i) then
+            table.insert(namelist,tostring(i))
+        end
+    end
+    return namelist
+end
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
+local w = library:CreateWindow('Strat Loader')
+local s = library:CreateWindow('Feature Settings')
+local d = library:CreateWindow('Credits')
+local PlayerName,PlayerRemove = {},""
+
+local InfoTable = {"Coins", "Gems","Level"}
+w:Section("Player: "..LocalPlayer.DisplayName.."")
+w:Toggle("Auto Add Current User",{default = true, flag = "autoyourself"},function(bool)
+    if bool then
+        table.insert(PlayerName,LocalPlayer.Name)
+    else
+        for i=1,#PlayerName do
+            if PlayerName[i] == LocalPlayer.Name then
+                table.remove(PlayerName,i)
+            end
+        end
+    end
+end)
+w:Section("Choose Strat")
+w:SearchBox("Strat Name", {
+    flag = "StratFullName",
+    list = GetFilesName("StratLoader","UserConfig")
+},function()
+    print(w.flags.StratFullName)
+end)
+w:Section("Add Players Same Config")
+w:AddBox("PlayerName",{flag = "plrname"},function(value)
+    if #string.gsub(value, "%s*%p*", "") > 0 then
+        --if (value:match(" ") or value:match(",")) then
+        local str = string.gsub(tostring(value),","," ")
+        local strs = string.split(str, " ")
+        PlayerName = {}
+        if w.flags.autoyourself then
+            table.insert(PlayerName,LocalPlayer.Name)
+        end
+        for i = 1, #strs do
+            if #strs[i] > 0 then
+                table.insert(PlayerName,strs[i])
+            end
+        end
+    else
+        PlayerName = {}
+        if w.flags.autoyourself then
+            table.insert(PlayerName,LocalPlayer.Name)
+        end
+    end
+end)
+w:Section("Remove Players Same Config")
+local rplr = w:SearchBox("Remove Player", {
+    location = _G;
+    flag = "RemovePlr";
+    list = GetPlayersList(getgenv().Config)
+}, function(value)
+    if #string.gsub(value, "%s*%p*", "") > 0 then
+        if (value:match(" ") or value:match(",")) then
+            local str = string.gsub(tostring(value),","," ")
+            local strs = string.split(str, " ")
+            PlayerRemove = {}
+            for i = 1, #strs do
+                if #strs[i] > 0 then
+                    table.insert(PlayerRemove,strs[i])
+                end
+            end
+        else
+            PlayerRemove = value
+        end
+    else
+        PlayerRemove = ""
+    end
+end)
+w:Section("Limit Progress")
+w:Toggle("Enable Limit",{flag= "limit"})
+w:Dropdown("Type Of Limit", {
+    flag = "Typelimitsetting";
+    list = {
+        "Coins";
+        "Gems";
+        'Level';
+    }
+})
+w:Box('Amount', {
+    flag = "AmountNumber";
+    default = 0;
+    type = 'number';
+})
+w:Toggle("Auto ShutDown Game",{flag = "shutdown"})
+w:Toggle("Auto Remove Config",{flag = "autoremconfig"})
+w:Section("Apply Strat Config Below")
+w:Button("Apply",function()
+    if PlayerRemove then
+        if type(PlayerRemove) == "table" and PlayerRemove[1] then
+            for i =1, #PlayerRemove do
+                Config[PlayerRemove[i]] = nil
+                rplr(GetPlayersList(getgenv().Config))
+            end
+        else
+            Config[PlayerRemove] = nil
+            rplr(GetPlayersList(getgenv().Config))
+        end
+    end
+    if w.flags.StratFullName and isfile(GetFilePath("StratLoader",w.flags.StratFullName)) then
+        if not (type(PlayerName) == "table" and #PlayerName > 0) then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Strat Loader",
+                Text = "Put Player Name You Want To Use With Strat.";
+                Duration = 5;
+            })
+        else
+            print(1)
+            for i =1, #PlayerName do
+                if PlayerName[i] ~= PlayerRemove then
+                    Config[PlayerName[i]] = {
+                        Active = true,
+                        StratName = w.flags.StratFullName or "",
+                        Limit = w.flags.limit or false,
+                        TypeLimit = w.flags.Typelimitsetting or "Coins",
+                        Amount = w.flags.AmountNumber or 0,
+                        AutoShut = w.flags.shutdown or false,
+                        AutoRemove = w.flags.autoremconfig or false,
+                    }
+                    game.StarterGui:SetCore("SendNotification", {
+                        Title = "Strat Loader",
+                        Text = "Name: "..PlayerName[i].."\nStrat: "..w.flags.StratFullName;
+                        Duration = 5;
+                    })
+                end
+            end
+            rplr(GetPlayersList(getgenv().Config))
+        end
+        print(2)
+        writefile("StratLoader\\UserConfig\\Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
+        print(3)
+    else
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Strat Loader",
+            Text = "Put Strat Name.";
+            Duration = 5;
+        })
+    end
+end)
+w:Button("Start",function()
+    if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
+        local JLFEnabled = FeatureConfig["JoinLessFeature"].Enabled
+        if JLFEnabled and #game:GetService("Players"):GetChildren() >= FeatureConfig["JoinLessFeature"].ActiveWhen then
+            local Min = FeatureConfig["JoinLessFeature"].MinPlr
+            local Max = FeatureConfig["JoinLessFeature"].MaxPlr
+            TeleportHandler(3260590327,Min,Max)
+            return
+        end
+        for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+            if v:IsA("Frame") and v.Name == "Strat Loader" then
+                v.Parent.Parent:Destroy()
+            end
+        end
+        Loader()
+    end
+end)
+w:Button("Print Config",function()
+    for i,v in next,getgenv().Config do
+        if type(v) == "table" then
+            for i2,v2 in next,v do
+                print(i,i2,v2)
+            end
+        else
+            print(i,v)
+        end
+    end
+end)
+s:Toggle("Enable GPU Limit",{flag= "gpulimit"})
+s:Section("Join Less Feature")
+s:Toggle("Enable",{flag = "joinlesstoggle"})
+s:Box("Active When Server Is", {
+    default = 12;
+    flag = "serverplaying";
+    type = 'number';
+})
+s:Box("Min Players", {
+    default = 1;
+    flag = "minplr";
+    type = 'number';
+})
+s:Box("Max Players", {
+    default = 3;
+    flag = "maxplr";
+    type = 'number';
+})
+s:Section("Apply Feature Config Below")
+s:Button("Apply",function()
+    if not (s.flags.serverplaying >= s.flags.maxplr) then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Strat Loader",
+            Text = "'Active When Server Is' Value Must Not Lower Than Max Players Value";
+            Duration = 5;
+        })
+    elseif not (s.flags.maxplr >= s.flags.minplr) then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Strat Loader",
+            Text = "Max Players Value Must Not Lower Than Min Players Value";
+            Duration = 5;
+        })
+    else
+        FeatureConfig = {
+            ["JoinLessFeature"] = {
+                Enabled = s.flags.joinlesstoggle or false;
+                ActiveWhen = s.flags.serverplaying or 12;
+                MinPlr = s.flags.minplr or 1;
+                MaxPlr = s.flags.maxplr or 3;
+            },
+            ["GPULimit"] = s.flags.gpulimit or false
+        }
+        writefile("StratLoader\\UserConfig\\FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
+    end
+end)
+s:Button("MeMayBeo Feature")
+--[[w:Section("Status:")
+w:Section("Strat: Coins")
+
+if table.find(InfoTable,Limit) then
+    w:Section("Limit: Enabled")
+    w:Section("Type: ".._G.Typelimitsetting.."")
+    if not Amount then
+        Amount = 0
+    end
+    w:Section("Amount: ".._G.AmountNumber.."")
+else
+    w:Section("Limit: Disabled")
+end]]
+w:Button("Delete Gui",function()
+    for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if v:IsA("Frame") and v.Name == "Strat Loader" then
+            v.Parent.Parent:Destroy()
+        end
+    end
+end)
+Changelog = {"New Ui","Fixed Delay","New Way To Organize"}
+
+d:Section("Version: 0.2 Dev-Beta")
+d:Button("Changelog:")
+for i = 1,#Changelog do
+    if type(Changelog[i]) == "string" then
+        d:Section(Changelog[i])
+    end
+end
+print("Time Loaded:",os.clock() - OldTime())
