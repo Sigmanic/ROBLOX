@@ -1,4 +1,4 @@
-repeat wait() until game:IsLoaded()
+[[repeat wait() until game:IsLoaded()
 local OldTime = os.clock()
 if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
 local LoadInfo = [[
@@ -512,3 +512,4 @@ for i = 1,#Changelog do
     end
 end
 print("Time Loaded:",os.clock() - OldTime())
+]]
