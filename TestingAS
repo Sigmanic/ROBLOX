@@ -1,4 +1,4 @@
-game.Players.PlayerAdded:Wait()
+repeat wait() until game:GetService("Players").LocalPlayer
 wait()
 local a = {}
 if not getgenv().ExecutedAlr then
