@@ -171,9 +171,9 @@ if not getgenv().ExecutedAlr then
                 game.Lighting.Brightness = 1
                 local t
                 if getgenv().CameraSys == true then
-                    t = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 50, 0)
+                    t = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame + Vector3.new(0, 50, 0)
                 else
-                    t = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 20, 0)
+                    t = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame + Vector3.new(0, 20, 0)
                 end
                 local u = Instance.new("Part")
                 u.Transparency = 1
@@ -182,11 +182,11 @@ if not getgenv().ExecutedAlr then
                 u.Parent = game.Workspace
                 u.CFrame = t
                 if getgenv().CameraSys == true then
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 55, 0)
+                    game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame =
+                        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame + Vector3.new(0, 55, 0)
                 else
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 25, 0)
+                    game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame =
+                        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame + Vector3.new(0, 25, 0)
                 end
                 if game.CoreGui:FindFirstChild("AutoStratsLogger") then
                     game.CoreGui:FindFirstChild("AutoStratsLogger"):Remove()
@@ -365,8 +365,8 @@ if not getgenv().ExecutedAlr then
                     function()
                         local R = false
                         R = not R
-                        game.Players.LocalPlayer.Character.Humanoid.PlatformStand = true
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = true
+                        game.Players.LocalPlayer.Character:WaitForChild("Humanoid").PlatformStand = true
+                        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Anchored = true
                         SprintKey = Enum.KeyCode.LeftShift
                         localPlayer = game.Players.LocalPlayer
                         Camera = game.Workspace.CurrentCamera
@@ -504,9 +504,9 @@ if not getgenv().ExecutedAlr then
                         a5:Button(
                             "Normal",
                             function()
-                                game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
-                                game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = false
-                                game.Workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+                                game.Players.LocalPlayer.Character:WaitForChild("Humanoid").PlatformStand = false
+                                game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Anchored = false
+                                game.Workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
                                 game.Workspace.CurrentCamera.CameraType = "Follow"
                                 a3 = 1
                             end
@@ -514,8 +514,8 @@ if not getgenv().ExecutedAlr then
                         a5:Button(
                             "Follow Enemies (Default)",
                             function()
-                                game.Players.LocalPlayer.Character.Humanoid.PlatformStand = true
-                                game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = true
+                                game.Players.LocalPlayer.Character:WaitForChild("Humanoid").PlatformStand = true
+                                game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Anchored = true
                                 game.Workspace.CurrentCamera.CameraType = "Follow"
                                 a3 = 2
                             end
@@ -525,8 +525,8 @@ if not getgenv().ExecutedAlr then
                             function()
                                 a3 = 3
                                 Camera.CameraType = Enum.CameraType.Scriptable
-                                game.Players.LocalPlayer.Character.HumanoidRootPart.Anchored = true
-                                game.Players.LocalPlayer.Character.Humanoid.PlatformStand = true
+                                game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Anchored = true
+                                game.Players.LocalPlayer.Character:WaitForChild("Humanoid").PlatformStand = true
                             end
                         )
                         while wait() do
@@ -540,7 +540,7 @@ if not getgenv().ExecutedAlr then
                                         if #a6 ~= 0 then
                                             for h, b in pairs(game.Workspace.NPCs:GetChildren()) do
                                                 if b:WaitForChild("HumanoidRootPart").CFrame.Y > -5 then
-                                                    game.Workspace.Camera.CameraSubject = b.HumanoidRootPart
+                                                    game.Workspace.Camera.CameraSubject = b:WaitForChild("HumanoidRootPart")
                                                     wait()
                                                     break
                                                 else
