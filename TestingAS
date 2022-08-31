@@ -169,6 +169,9 @@ if not getgenv().ExecutedAlr then
                 game.Lighting.FogStart = 10000000
                 game.Lighting.FogEnd = 10000000
                 game.Lighting.Brightness = 1
+                if not game.Players.LocalPlayer.Character then
+                    repeat wait() until game.Players.LocalPlayer.Character
+                end
                 local t
                 if getgenv().CameraSys == true then
                     t = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame + Vector3.new(0, 50, 0)
