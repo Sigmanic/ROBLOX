@@ -1152,6 +1152,7 @@ if not getgenv().ExecutedAlr then
     function a:Upgrade(aS, aK, ak, aj, aP)
         spawn(
             function()
+                print(aS,aK,ak,aj)
                 appendfile(
                     fileprefix .. "LastStrat.txt",
                     "TDS:Upgrade(" .. aS .. ", " .. aK .. ", " .. ak .. ", " .. aj .. ")\n"
