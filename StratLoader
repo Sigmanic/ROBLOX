@@ -1,6 +1,6 @@
-repeat wait() until game:IsLoaded()
-local OldTime = os.clock()
+--Strat may failed to load duo to character death lead to HumanoidRootPart missing --Strat issue but i may give a fix for this
 if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
+local OldTime = os.clock()
 local LoadInfo = [[
     StratLoader("Name Of The Strat",
     {"Username1","Username2","Username3","Username4"},
@@ -13,6 +13,9 @@ local LoadInfo = [[
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
 
 --Below here is the library of Strat Loader
+local Version = "Version: 0.3 Buid 2 Dev-Beta"
+local Changelog = {"Loading Library Faster","Feature Tab Use Value In Config","Rejoin Low Server Match Ended","Added Abort Progress Button","Added Credits"}
+
 local gethiddenproperty = gethiddenproperty or gethiddenprop or get_hidden_property or get_hidden_prop or getpropvalue
 local sethiddenproperty = sethiddenproperty or sethiddenprop or set_hidden_property or set_hidden_prop or setpropvalue
 assert(readfile, 'Exploit is missing readfile function')
@@ -42,85 +45,71 @@ if isfile("StratLoader\\UserConfig\\FeatureConfig.txt") then
 else
     writefile("StratLoader\\UserConfig\\FeatureConfig.txt",cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
 end
-
-if game.PlaceId == 3260590327 then
-    local function GetServersInfo(Placeid,MinPlr,MaxPlr,MaxPlaying)
-        local Cancel = false
-        if not Placeid then
-            Placeid = game.PlaceId
-        end
-        if not MinPlr then
-            MinPlr = 1
-        end
-        if not MaxPlr then
-            MaxPlr = 3
-        end
-        if not MaxPlaying then
-            if MaxPlr then
-                MaxPlaying = MaxPlr + 1
-            else
-                MaxPlaying = 5
-            end
-        end
-        local Servers = {}
-        local CurrentCursor = ""
-        repeat
-            local Success = pcall(function()
-                local ListRaw = game:HttpGet("https://games.roblox.com/v1/games/"..tostring(Placeid).."/servers/Public?sortOrder=Asc&limit=100&cursor="..CurrentCursor)
-                local CurrentList = game:GetService("HttpService"):JSONDecode(ListRaw) -- done in 2 steps for getting cursor later
-                for i = 1,#CurrentList.data do
-                    if CurrentList ~= nil and CurrentList.data[i].playing <= tonumber(MaxPlr) then
-                       --print(CurrentList.data[i].playing)
-                        table.insert(Servers, CurrentList.data[i])
-                    elseif CurrentList.data[i].playing > tonumber(MaxPlr)+1 then
-                        Cancel = true
-                    end
-                end
-                local CursorIndex = string.find(ListRaw, "nextPageCursor")
-                local EndComma = string.find(ListRaw, ",", CursorIndex)
-                local ToEdit = string.gsub(string.sub(ListRaw, CursorIndex, EndComma - 1), '"', "")
-                CurrentCursor = string.gsub(ToEdit, 'nextPageCursor:', "")
-            end)
-            task.wait()
-        until (CurrentCursor == "null" and Success == true) or Cancel == true
-        return Servers
-    end
-    local function TeleportHandler(Id,MinPlayers,MaxPlayers)
-        local GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
-        local FailedConnection = game:GetService("TeleportService").TeleportInitFailed:Connect(function(Player, Result, Msg)
-            if Player == game:GetService("Players").LocalPlayer then
-                if Result == Enum.TeleportResult.Unauthorized then
-                    table.remove(GetServers,IdRandom)
-                    if not GetServers[1] then 
-                        MinPlayers = MaxPlayers - 1
-                        repeat
-                            MaxPlayers = MaxPlayers + 2
-                            GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
-                            wait(.1)
-                        until GetServers[1]
-                    end
-                    IdRandom = math.random(1,#GetServers)
-                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, GetServers[IdRandom].id, game:GetService("Players").LocalPlayer)
+local function GetServersInfo(Placeid,MinPlr,MaxPlr,MaxPlaying)
+    local Cancel = false
+    local Servers = {}
+    local CurrentCursor = ""
+    repeat
+        local Success = pcall(function()
+            local ListRaw = game:HttpGet("https://games.roblox.com/v1/games/"..tostring(Placeid).."/servers/Public?sortOrder=Asc&limit=100&cursor="..CurrentCursor)
+            local CurrentList = game:GetService("HttpService"):JSONDecode(ListRaw) -- done in 2 steps for getting cursor later
+            for i = 1,#CurrentList.data do
+                if CurrentList ~= nil and CurrentList.data[i].playing <= tonumber(MaxPlr) then
+                   --print(CurrentList.data[i].playing)
+                    table.insert(Servers, CurrentList.data[i])
+                elseif CurrentList.data[i].playing > tonumber(MaxPlr)+1 then
+                    Cancel = true
                 end
             end
-        end)     
-        if not GetServers[1] then
-            repeat
-                MaxPlayers = MaxPlayers + 1
-                GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
-                wait(.1)
-            until GetServers[1]
-        end
-        local IdRandom = math.random(1,#GetServers)
-        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, GetServers[IdRandom].id, game:GetService("Players").LocalPlayer)
-    end
-    if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active and FeatureConfig["JoinLessFeature"].Enabled and #game:GetService("Players"):GetChildren() >= FeatureConfig["JoinLessFeature"].ActiveWhen then
-        local Min = FeatureConfig["JoinLessFeature"].MinPlr
-        local Max = FeatureConfig["JoinLessFeature"].MaxPlr
-        TeleportHandler(3260590327,Min,Max)
-        return
-    end
+            local CursorIndex = string.find(ListRaw, "nextPageCursor")
+            local EndComma = string.find(ListRaw, ",", CursorIndex)
+            local ToEdit = string.gsub(string.sub(ListRaw, CursorIndex, EndComma - 1), '"', "")
+            CurrentCursor = string.gsub(ToEdit, 'nextPageCursor:', "")
+        end)
+        task.wait()
+    until (CurrentCursor == "null" and Success == true) or Cancel == true
+    return Servers
 end
+local function TeleportHandler(Id,MinPlayers,MaxPlayers)
+    if not Id then
+        Id = game.PlaceId
+    end
+    if not MinPlayers then
+        MinPlayers = 1
+    end
+    if not MaxPlayers then
+        MaxPlayers = 3
+    end
+    local GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
+    local FailedConnection = game:GetService("TeleportService").TeleportInitFailed:Connect(function(Player, Result, Msg)
+        if Player == game:GetService("Players").LocalPlayer then
+            if Result == Enum.TeleportResult.Unauthorized or Result == Enum.TeleportResult.GameEnded then
+                table.remove(GetServers,IdRandom)
+                if not GetServers[1] then 
+                    MinPlayers = MaxPlayers - 1
+                    repeat
+                        MaxPlayers = MaxPlayers + 2
+                        GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
+                        wait(.1)
+                    until GetServers[1]
+                end
+                IdRandom = math.random(1,#GetServers)
+                game:GetService("TeleportService"):TeleportToPlaceInstance(Id, GetServers[IdRandom].id, game:GetService("Players").LocalPlayer)
+            end
+        end
+    end)     
+    if not GetServers[1] then
+        repeat
+            MaxPlayers = MaxPlayers + 1
+            GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
+            wait(.1)
+        until GetServers[1]
+    end
+    local IdRandom = math.random(1,#GetServers)
+    game:GetService("TeleportService"):TeleportToPlaceInstance(Id, GetServers[IdRandom].id, game:GetService("Players").LocalPlayer)
+end
+print("TeleportHandler Library's Loaded:",os.clock() - OldTime)
+
 local GetFiles = function(path,excludefile)
     local tablefiles = {}
     local tableexclude = {}
@@ -189,6 +178,7 @@ local GetFilePath = function(path,name)
         return false
     end
 end
+
 getgenv().MinimizeClient = function(boolean)
     if boolean == nil then
         boolean = true
@@ -227,6 +217,7 @@ getgenv().MinimizeClient = function(boolean)
         end
     end
 end
+local LoadStrat
 
 function Loader()
     if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
@@ -247,16 +238,128 @@ function Loader()
             MinimizeClient(true)
         end
         if StratName then
-            loadfile(StratName)()
+            LoadStrat()
             print("Time Loaded:",os.clock() - OldTime)
         else
             warn("Couldn't Find Strat Name "..GetConfig.StratName.."In StratLoader Folder.")
+            return
         end
+        task.spawn(function()
+            wait(100)
+            if game.PlaceId == 5591597781 then
+                if not FeatureConfig["JoinLessFeature"].Enabled then
+                    return
+                end
+                game:GetService("Players").LocalPlayer.PlayerGui.GameGui.Results.Content:Destroy()
+                game:GetService("Players").LocalPlayer.PlayerGui.GameGui.Results:GetPropertyChangedSignal("Visible"):Connect(function()
+                    local Min = FeatureConfig["JoinLessFeature"].MinPlr
+                    local Max = FeatureConfig["JoinLessFeature"].MaxPlr
+                    TeleportHandler(3260590327,Min,Max)
+                end)
+            end
+        end)
     end
 end
+print("Library Function's Loaded:",os.clock() - OldTime)
+
+--repeat wait() until game:IsLoaded()
+if not game:IsLoaded() then
+    game['Loaded']:Wait()
+end
+
+if game.PlaceId == 3260590327 and Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active and FeatureConfig["JoinLessFeature"].Enabled and #game:GetService("Players"):GetChildren() >= FeatureConfig["JoinLessFeature"].ActiveWhen then 
+    local Min = FeatureConfig["JoinLessFeature"].MinPlr
+    local Max = FeatureConfig["JoinLessFeature"].MaxPlr
+    TeleportHandler(3260590327,Min,Max)
+    return
+end
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
+task.spawn(function()
+    if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
+        LoadStrat = loadfile(GetFilePath("StratLoader",Config[game:GetService("Players").LocalPlayer.Name].StratName))
+    end
+end)
 print("Library's Time Loaded:",os.clock() - OldTime)
+
 if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
     Loader()
+
+    library:CreateWindow('PlaceHolder')
+    if game.PlaceId == 5591597781 then
+        library:CreateWindow('PlaceHolder')
+    end
+    for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if v:IsA("Frame") and v.Name == "PlaceHolder" then
+            v.Visible = false
+        elseif v:IsA("Frame") and v.Name == "Camera" then
+            v.Position = UDim2.new(0, 215, 0, 0)
+        end
+    end
+
+    --Feature Setting Tab
+    local s = library:CreateWindow('Feature Settings')
+    s:Toggle("Enable GPU Limit",{default = FeatureConfig["GPULimit"], flag = "gpulimit"})
+    s:Section("Join Less Feature")
+    s:Toggle("Enable",{default = FeatureConfig["GPULimit"], flag = "joinlesstoggle"})
+    s:Box("Active When Server Is", {
+        default = FeatureConfig["JoinLessFeature"].ActiveWhen;
+        flag = "serverplaying";
+        type = 'number';
+    })
+    s:Box("Min Players", {
+        default = FeatureConfig["JoinLessFeature"].MinPlr;
+        flag = "minplr";
+        type = 'number';
+    })
+    s:Box("Max Players", {
+        default = FeatureConfig["JoinLessFeature"].MaxPlr;
+        flag = "maxplr";
+        type = 'number';
+    })
+    s:Section("Apply Feature Config Below")
+    s:Button("Apply",function()
+        if not (s.flags.serverplaying >= s.flags.maxplr) then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Strat Loader",
+                Text = "'Active When Server Is' Value Must Not Lower Than Max Players Value";
+                Duration = 5;
+            })
+        elseif not (s.flags.maxplr >= s.flags.minplr) then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Strat Loader",
+                Text = "Max Players Value Must Not Lower Than Min Players Value";
+                Duration = 5;
+            })
+        else
+            FeatureConfig = {
+                ["JoinLessFeature"] = {
+                    Enabled = s.flags.joinlesstoggle or false;
+                    ActiveWhen = s.flags.serverplaying or 12;
+                    MinPlr = s.flags.minplr or 1;
+                    MaxPlr = s.flags.maxplr or 3;
+                },
+                ["GPULimit"] = s.flags.gpulimit or false
+            }
+            writefile("StratLoader\\UserConfig\\FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
+        end
+    end)
+    s:Section("Cancel Strat")
+    s:Button("Abort Progress",function()
+        Config[game:GetService("Players").LocalPlayer.Name].Active = false
+        writefile("StratLoader\\UserConfig\\Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
+        game:GetService("TeleportService"):Teleport(3260590327)
+    end)
+
+    --Credit Tab
+    local d = library:CreateWindow('Credits')
+    d:Section("Strat Loader")
+    d:Section(Version)
+    d:Button("Changelog:")
+    for i = 1,#Changelog do
+        if type(Changelog[i]) == "string" then
+            d:Section(Changelog[i])
+        end
+    end
     return
 end
 function GetPlayersList(name)
@@ -271,9 +374,7 @@ function GetPlayersList(name)
     end
     return namelist
 end
-local Version = "Version: 0.3.1 Dev-Beta"
-local Changelog = {"New Ui","Fixed Delay","Fixxed Strat Name Box","Added Re-Execute Button"}
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
+
 local w = library:CreateWindow('Strat Loader')
 local s = library:CreateWindow('Feature Settings')
 local d = library:CreateWindow('Credits')
@@ -293,11 +394,14 @@ w:Toggle("Auto Add Current User",{default = true, flag = "autoyourself"},functio
     end
 end)
 w:Section("Choose Strat")
-w:SearchBox("Strat Name", {
+local stratname = w:SearchBox("Strat Name", {
     flag = "StratFullName",
     list = GetFilesName("StratLoader","UserConfig",false)
 },function()
     print(w.flags.StratFullName)
+end)
+w:Button("Refresh Strat Name Box",function()
+    stratname(GetFilesName("StratLoader","UserConfig",false))
 end)
 w:Section("Add Players Same Config")
 w:AddBox("Player Name",{flag = "plrname"},function(value)
@@ -451,21 +555,23 @@ w:Button("Re-Execute",function()
     end
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/StratLoader", true))()
 end)
-s:Toggle("Enable GPU Limit",{flag= "gpulimit"})
+
+--Feature Setting Tab
+s:Toggle("Enable GPU Limit",{default = FeatureConfig["GPULimit"], flag = "gpulimit"})
 s:Section("Join Less Feature")
-s:Toggle("Enable",{flag = "joinlesstoggle"})
+s:Toggle("Enable",{default = FeatureConfig["GPULimit"], flag = "joinlesstoggle"})
 s:Box("Active When Server Is", {
-    default = 12;
+    default = FeatureConfig["JoinLessFeature"].ActiveWhen;
     flag = "serverplaying";
     type = 'number';
 })
 s:Box("Min Players", {
-    default = 1;
+    default = FeatureConfig["JoinLessFeature"].MinPlr;
     flag = "minplr";
     type = 'number';
 })
 s:Box("Max Players", {
-    default = 3;
+    default = FeatureConfig["JoinLessFeature"].MaxPlr;
     flag = "maxplr";
     type = 'number';
 })
@@ -497,6 +603,7 @@ s:Button("Apply",function()
     end
 end)
 s:Button("MeMayBeo Feature")
+
 --[[w:Section("Status:")
 w:Section("Strat: Coins")
 
