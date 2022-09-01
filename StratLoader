@@ -217,12 +217,19 @@ getgenv().MinimizeClient = function(boolean)
         end
     end
 end
-local LoadStrat
+local LoadStrat = {}
+for i,v in next,GetFilesName("StratLoader","UserConfig",false) do
+    local strat = GetFilePath("StratLoader",v)
+    if strat then
+        print(v,loadfile(strat))
+        LoadStrat[v] = loadfile(strat)
+    end
+end
 
 function Loader()
     if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
         local GetConfig = Config[game:GetService("Players").LocalPlayer.Name]
-        local StratName = GetFilePath("StratLoader",GetConfig.StratName)
+        local StratName = LoadStrat[GetConfig.StratName]
         local Limit = GetConfig.Limit
         if game.PlaceId == 3260590327 and Limit and tonumber(game:GetService("Players").LocalPlayer:WaitForChild(GetConfig.TypeLimit).Value) >= GetConfig.Amount then
             if GetConfig.AutoRemove then
@@ -238,10 +245,10 @@ function Loader()
             MinimizeClient(true)
         end
         if StratName then
-            LoadStrat()
+            StratName()
             print("Time Loaded:",os.clock() - OldTime)
         else
-            warn("Couldn't Find Strat Name "..GetConfig.StratName.."In StratLoader Folder.")
+            warn("Couldn't Find Strat Name "..GetConfig.StratName.." In StratLoader Folder.")
             return
         end
         task.spawn(function()
@@ -274,11 +281,6 @@ if game.PlaceId == 3260590327 and Config[game:GetService("Players").LocalPlayer.
     return
 end
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
-task.spawn(function()
-    if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
-        LoadStrat = loadfile(GetFilePath("StratLoader",Config[game:GetService("Players").LocalPlayer.Name].StratName))
-    end
-end)
 print("Library's Time Loaded:",os.clock() - OldTime)
 
 if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
