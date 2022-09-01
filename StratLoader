@@ -13,7 +13,7 @@ local LoadInfo = [[
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
 
 --Below here is the library of Strat Loader
-local Version = "Version: 0.3 Buid 2 Dev-Beta"
+local Version = "Version: 0.3 Buid 3 Dev-Beta"
 local Changelog = {"Loading Library Faster","Feature Tab Use Value In Config","Rejoin Low Server Match Ended","Added Abort Progress Button","Added Credits"}
 
 local gethiddenproperty = gethiddenproperty or gethiddenprop or get_hidden_property or get_hidden_prop or getpropvalue
