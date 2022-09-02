@@ -1,6 +1,7 @@
 --Strat may failed to load duo to character death lead to HumanoidRootPart missing --Strat issue but i may give a fix for this
 if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
 local OldTime = os.clock()
+repeat wait() until game:GetService("Players").LocalPlayer
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
 
 --Below here is the library of Strat Loader
