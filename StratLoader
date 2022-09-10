@@ -1,18 +1,28 @@
 --Strat may failed to load duo to character death lead to HumanoidRootPart missing --Strat issue but i may give a fix for this
 if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
 local OldTime = os.clock()
-repeat wait() until game:GetService("Players").LocalPlayer
+local LoadInfo = [[
+    StratLoader("Name Of The Strat",
+    {"Username1","Username2","Username3","Username4"},
+    "Type Of Grindind",Amount)
+    StratLoader("scout",
+    {"Username1","fthiend999","Username3","Username4"})
+    StratLoader("Ultimate_FalMol","haigta45","Coins")
+    StratLoader("gminigunner","mIzIBiis5235")
+]]
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
 
 --Below here is the library of Strat Loader
-local Version = "Version: 0.3 Buid 2/9 Dev-Beta"
-local Changelog = {"Loading Library Faster","Feature Tab Use Value In Config","Rejoin Low Server Match Ended","Added Abort Progress Button","Added Credits"}
+local Version = "Version: 0.4 Buid 1 Dev-Beta"
+local Changelog = {"!!Require hookmetamethod()","Added New Replace Webhook","Added Player's Log","Low Graphic When GPULimit","Fix A Bug In JLS Toggle"}
 
 local gethiddenproperty = gethiddenproperty or gethiddenprop or get_hidden_property or get_hidden_prop or getpropvalue
 local sethiddenproperty = sethiddenproperty or sethiddenprop or set_hidden_property or set_hidden_prop or setpropvalue
 assert(readfile, 'Exploit is missing readfile function')
 assert(listfiles, 'Exploit is missing listfiles function')
 assert(isfile, 'Exploit is missing isfile function')
+assert(hookmetamethod, 'Exploit is missing isfile function')
+
 getgenv().Config = {}
 getgenv().FeatureConfig = {
     ["JoinLessFeature"] = {
@@ -21,22 +31,91 @@ getgenv().FeatureConfig = {
         MinPlr = 1;
         MaxPlr = 3;
     },
-    ["GPULimit"] = false
+    ["GPULimit"] = false,
+    ["CustomLog"] = false
 }
 
 if not isfolder("StratLoader") then
-    makefolder("StratLoader\\UserConfig")
+    makefolder("StratLoader/UserConfig")
+    if not isfolder("StratLoader/UserLogs") then
+        makefolder("StratLoader/UserLogs")
+    end
 end
-if isfile("StratLoader\\UserConfig\\Config.txt") then
-    getgenv().Config = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader\\UserConfig\\Config.txt"))
+if isfile("StratLoader/UserConfig/Config.txt") then
+    getgenv().Config = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader/UserConfig/Config.txt"))
 else
-    writefile("StratLoader\\UserConfig\\Config.txt",cloneref(game:GetService("HttpService")):JSONEncode(Config))
+    writefile("StratLoader/UserConfig/Config.txt",cloneref(game:GetService("HttpService")):JSONEncode(Config))
 end
-if isfile("StratLoader\\UserConfig\\FeatureConfig.txt") then
-    getgenv().FeatureConfig = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader\\UserConfig\\FeatureConfig.txt"))
+if isfile("StratLoader/UserConfig/FeatureConfig.txt") then
+    getgenv().FeatureConfig = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader/UserConfig/FeatureConfig.txt"))
 else
-    writefile("StratLoader\\UserConfig\\FeatureConfig.txt",cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
+    writefile("StratLoader/UserConfig/FeatureConfig.txt",cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
 end
+local function WriteFile(check,name,location,str)
+    if not check then
+        return
+    end
+    if type(name) == "string" then
+        if not type(location) == "string" then
+            location = ""
+        end
+        if not isfolder(location) then
+            makefolder(location)
+        end
+        if type(str) ~= "string" then
+            error("Argument 4 must be a string got " .. tostring(number))
+        end
+        writefile(location.."/"..name..".txt",str)
+    else
+        error("Argument 2 must be a string got " .. tostring(number))
+    end
+end
+local function AppendFile(check,name,location,str)
+    if not check then
+        return
+    end
+    if type(name) == "string" then
+        if not type(location) == "string" then
+            location = ""
+        end
+        if not isfolder(location) then
+            makefolder(location)
+        end
+        if type(str) ~= "string" then
+            error("Argument 4 must be a string got " .. tostring(number))
+        end
+        appendfile(location.."/"..name..".txt",str)
+    else
+        error("Argument 2 must be a string got " .. tostring(number))
+    end
+end
+repeat wait() until game:GetService("Players").LocalPlayer
+local writelog = function(str)
+    task.spawn(function()
+        print(str)
+        return WriteFile(Config[game:GetService("Players").LocalPlayer.Name],game:GetService("Players").LocalPlayer.Name.."'s log","StratLoader/UserLogs",tostring(str))
+    end)
+end
+local appendlog = function(str)
+    task.spawn(function()
+        print(str)
+        return AppendFile(Config[game:GetService("Players").LocalPlayer.Name],game:GetService("Players").LocalPlayer.Name.."'s log","StratLoader/UserLogs",tostring(str).."\n")
+    end)
+end
+writelog("--------------------------- Profile Log ---------------------------"..
+"\nLog Date ("..os.date("%X").." "..os.date("%x")..")"..
+"\nName: " ..game:GetService("Players").LocalPlayer.Name.." | DisplayName: " ..game:GetService("Players").LocalPlayer.DisplayName..
+"\nActive Status: "..tostring(Config[game:GetService("Players").LocalPlayer.Name].Active)..
+"\nStrat Name: "..tostring(Config[game:GetService("Players").LocalPlayer.Name].StratName)..
+"\n--------------------------- Feature Log ---------------------------"..
+"\nGPU Limit: "..tostring(FeatureConfig["GPULimit"])..
+"\nCustom Log: "..tostring(FeatureConfig["CustomLog"])..
+"\nJoinLessFeature Status: "..tostring(FeatureConfig["JoinLessFeature"].Enabled)..
+"\n+ Active When: "..tostring(FeatureConfig["JoinLessFeature"].ActiveWhen)..
+"\n+ Min Players: "..tostring(FeatureConfig["JoinLessFeature"].MinPlr)..
+"\n+ Max Players: "..tostring(FeatureConfig["JoinLessFeature"].MaxPlr)..
+"\n---------------------- Below here is the log ----------------------\n"
+)
 local function GetServersInfo(Placeid,MinPlr,MaxPlr,MaxPlaying)
     local Cancel = false
     local Servers = {}
@@ -100,7 +179,9 @@ local function TeleportHandler(Id,MinPlayers,MaxPlayers)
     local IdRandom = math.random(1,#GetServers)
     game:GetService("TeleportService"):TeleportToPlaceInstance(Id, GetServers[IdRandom].id, game:GetService("Players").LocalPlayer)
 end
-print("TeleportHandler Library's Loaded:",os.clock() - OldTime)
+local Time = tostring(os.clock() - OldTime)
+--print("TeleportHandler Library's Loaded:",Time)
+appendlog("TeleportHandler Library's Loaded: "..Time)
 
 local GetFiles = function(path,excludefile)
     local tablefiles = {}
@@ -128,7 +209,7 @@ local GetFiles = function(path,excludefile)
             else
                 table.insert(tablefiles,v)
             end
-    end
+        end
     end
     return tablefiles
 end
@@ -138,7 +219,7 @@ local GetFilesName = function(path,name,bool)
     if not path then
         path = ""
     end
-    if type(name) == "string" and bool == nil then
+    if (type(name) == "string" or type(name) == "table") and bool == nil then
         bool = true
     end
     if bool == false then
@@ -170,6 +251,9 @@ local GetFilePath = function(path,name)
         return false
     end
 end
+local Time = tostring(os.clock() - OldTime)
+--print("API Library's Loaded:",Time)
+appendlog("API Library's Loaded: "..Time)
 
 getgenv().MinimizeClient = function(boolean)
     if boolean == nil then
@@ -179,6 +263,7 @@ getgenv().MinimizeClient = function(boolean)
         getgenv().FirstTime = true
         GlobalShadow = game:GetService("Lighting").GlobalShadows
         PhysicsThrottle = settings().Physics.PhysicsEnvironmentalThrottle
+        OldQuality = settings():GetService("RenderSettings").QualityLevel
         if gethiddenproperty and not KRNL_LOADED then
             TechLight = gethiddenproperty(game:GetService("Lighting"), "Technology")
         end
@@ -187,6 +272,7 @@ getgenv().MinimizeClient = function(boolean)
         pcall(function()
             setfpscap(10)
         end)
+        settings():GetService("RenderSettings").QualityLevel = Enum.QualityLevel.Level01
         settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
         if sethiddenproperty and not KRNL_LOADED then
             sethiddenproperty(game:GetService("Lighting"), "Technology",Enum.Technology.Compatibility)
@@ -196,6 +282,7 @@ getgenv().MinimizeClient = function(boolean)
         pcall(function()
             setfpscap(60)
         end)
+        settings():GetService("RenderSettings").QualityLevel = OldQuality
         settings().Physics.PhysicsEnvironmentalThrottle = PhysicsThrottle
         if sethiddenproperty and not KRNL_LOADED then
             sethiddenproperty(game:GetService("Lighting"), "Technology",TechLight)
@@ -210,11 +297,15 @@ getgenv().MinimizeClient = function(boolean)
     end
 end
 local LoadStrat = {}
-for i,v in next,GetFilesName("StratLoader","UserConfig",false) do
+for i,v in next,GetFilesName("StratLoader",{"UserConfig","UserLogs"},false) do
     local strat = GetFilePath("StratLoader",v)
-    if strat then
-        print(v,loadfile(strat))
+    if strat and isfile(strat) and tostring(loadfile(strat)) ~= "nil" then
+        --print(v,loadfile(strat))
+        appendlog('Load File Name "'..tostring(v)..'": '..tostring(loadfile(strat)))
         LoadStrat[v] = loadfile(strat)
+    else
+        --print("Can't Find File Name:",v)
+        appendlog("Can't Find File Name "..tostring(v).."Or It's Content Has Been Corrupted")
     end
 end
 
@@ -238,28 +329,158 @@ function Loader()
         end
         if StratName then
             StratName()
-            print("Time Loaded:",os.clock() - OldTime)
+            --print("Strat's Time Loaded:",os.clock() - OldTime)
+            appendlog("Strat's Time Loaded: "..tostring(os.clock() - OldTime))
         else
-            warn("Couldn't Find Strat Name "..GetConfig.StratName.." In StratLoader Folder.")
+            --warn("Couldn't Find Strat Name "..GetConfig.StratName.." In StratLoader Folder.")
+            appendlog("Couldn't Find Strat Name "..GetConfig.StratName.." In StratLoader Folder.")
             return
         end
         task.spawn(function()
             wait(100)
             if game.PlaceId == 5591597781 then
-                if not FeatureConfig["JoinLessFeature"].Enabled then
+                if not (FeatureConfig["CustomLog"] or FeatureConfig["JoinLessFeature"].Enabled) then
                     return
                 end
-                game:GetService("Players").LocalPlayer.PlayerGui.GameGui.Results.Content:Destroy()
-                game:GetService("Players").LocalPlayer.PlayerGui.GameGui.Results:GetPropertyChangedSignal("Visible"):Connect(function()
+                local GameGui = game:GetService("Players").LocalPlayer.PlayerGui.GameGui
+                local Content = GameGui.Results.Content
+                local OldIndex
+                OldIndex = hookmetamethod(game,"__index",function(...)
+                    local Args = {...}
+                    if Args[1] == Content and Args[2] == "Visible" and checkcaller() then --Spoof value
+                        return false
+                    end
+                    return OldIndex(...)
+                end)
+                GameGui.Results:GetPropertyChangedSignal("Visible"):Connect(function()
+                    if readfile("TDS_AutoStrat/Webhook (Logs).txt") ~= "WEBHOOK HERE" then
+                        task.spawn(function()
+                            local SendRequest = http_request or request or HttpPost or syn.request
+                            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                            local LocalPlayer = game:GetService("Players").LocalPlayer
+                            local function CheckMode()
+                                for i,v in next,Content.Titles:GetChildren() do
+                                    if v.Name ~= "Triumph2" and v.Visible == true then
+                                        return tostring(v.Name)
+                                    end
+                                end
+                            end
+                            local function CheckReward()
+                                for i,v in next,Content.Rewards:GetChildren() do
+                                    if (v.Name == "Coins" or v.Name == "Gems") and v.Visible == true then
+                                        return v.Name.." : **"..v.TextLabel.Text
+                                    end
+                                end
+                            end
+                            local function CheckTower()
+                                local str = ""
+                                local troops = {}
+                                for i,v in next,ReplicatedStorage.RemoteFunction:InvokeServer("Session", "Search", "Inventory.Troops") do
+                                    if v.Equipped then
+                                        table.insert(troops, i)
+                                    end
+                                end
+                                for i,v in next,game.CoreGui:GetDescendants() do
+                                    if v:IsA("Frame") and v.Name == "Counter" then
+                                        for i2,v2 in next,v.container:GetChildren() do
+                                            if v2:IsA("Frame") and table.find(troops,string.split(v2:FindFirstChild("section_lbl").Text," : ")[1]) then
+                                                str = str.."\n**"..string.split(v2:FindFirstChild("section_lbl").Text," : ")[1].." : **"..string.split(v2:FindFirstChild("section_lbl").Text," : ")[2]
+                                            end
+                                        end
+                                    end
+                                end
+                                return str
+                            end
+                            local function CheckColor()
+                                if CheckMode() == "Triumph" then
+                                    return tonumber(65280)
+                                elseif CheckMode() == "Lose" then
+                                    return tonumber(16711680)
+                                else
+                                    return tonumber(16744448)
+                                end
+                            end
+                            wait(1.25) --Need wait here because CheckReward() need over 1,5s to detect which value is visible
+                            local CheckRewardStr = CheckReward()
+                            repeat 
+                                CheckRewardStr = CheckReward() 
+                                wait() 
+                            until type(CheckRewardStr) == "string"
+                            local Data = {
+                                ["username"] = "TDS AutoStrat Log",
+                                ["embeds"] = {
+                                    {
+                                        ["title"] = "**AutoStrat Log ("..os.date("%X").." "..os.date("%x")..")**",
+                                        ["description"] = "**--------------- ACCOUNT INFO ----------------**"..
+                                        "\n**Name : **" ..LocalPlayer.Name.."** | DisplayName : **" ..LocalPlayer.DisplayName..
+                                        "\n**Coins : **" ..LocalPlayer.Coins.Value.." :coin:** | Gems : **" ..LocalPlayer.Gems.Value.." :six_pointed_star:"..--" :gem:"..
+                                        "\n**Level : **" ..LocalPlayer.Level.Value.." :chart_with_upwards_trend: ** | Exp : **" ..LocalPlayer.Experience.Value.." :star:"..
+                                        "\n**Triumphs : **" ..LocalPlayer.Triumphs.Value.." :trophy: ** | Loses : **" ..LocalPlayer.Loses.Value.." :skull:"..
+                                        "\n**------------------ GAME INFO ------------------**"..
+                                        "\n**Mode : **"..ReplicatedStorage.State.Difficulty.Value.."** | Map : ** "..ReplicatedStorage.State.Map.Value..
+                                        "\n**Game Time : **" ..Content.Stats.Duration.Text..
+                                        "\n**Health : **" ..GameGui.Health.Survival.Count.Text.."** | Result : **" ..CheckMode()..
+                                        "\n**Won Experience : **" ..Content.Rewards.Experience.TextLabel.Text..
+                                        "\n**Won " ..CheckRewardStr..
+                                        "\n**----------------- TROOPS INFO -----------------**"..CheckTower()..
+                                        "\n**-----------------------------------------------**"
+                                        ,
+                                        ["type"] = "rich",
+                                        ["color"] = CheckColor(),
+                                    }
+                                }
+                            }
+                            local SendData = {
+                                Url = readfile("TDS_AutoStrat/Webhook (Logs).txt"), 
+                                Body = game:GetService("HttpService"):JSONEncode(Data), 
+                                Method = "POST", 
+                                Headers = {
+                                    ["content-type"] = "application/json"
+                                }
+                            }
+                            SendRequest(SendData)
+                        end)
+                    end
+                    wait()
+                    if FeatureConfig["JoinLessFeature"].Enabled then
+                        local Min = FeatureConfig["JoinLessFeature"].MinPlr
+                        local Max = FeatureConfig["JoinLessFeature"].MaxPlr
+                        --print("Rejoin")
+                        appendlog("Rejoining JLS After Match")
+                        TeleportHandler(3260590327,Min,Max)
+                    else
+                        appendlog("Rejoining Back To Lobby")
+                        game:GetService("TeleportService"):Teleport(3260590327)
+                    end
+                end)
+                return
+            else
+                if FeatureConfig["JoinLessFeature"].Enabled and #game:GetService("Players"):GetChildren() >= FeatureConfig["JoinLessFeature"].ActiveWhen then
+                    local GetStatus
+                    for i,v in next,game:GetService("CoreGui"):GetDescendants() do
+                        if v.Name == "Lobby" then
+                            for i2,v2 in next,v.container:GetChildren() do
+                                if i2 == 3 and v2.Name == "Section" and v2:FindFirstChild("section_lbl") then
+                                    GetStatus = v2:FindFirstChild("section_lbl")
+                                end
+                            end
+                        end
+                    end
+                    appendlog("Detect If Player Is Joining Game")
+                    repeat task.wait() until not (GetStatus.Text:match("Join") and not GetStatus.Text:match("Someone"))
+                    appendlog("Rejoining JLS")
                     local Min = FeatureConfig["JoinLessFeature"].MinPlr
                     local Max = FeatureConfig["JoinLessFeature"].MaxPlr
                     TeleportHandler(3260590327,Min,Max)
-                end)
+                    return
+                end
             end
         end)
     end
 end
-print("Library Function's Loaded:",os.clock() - OldTime)
+local Time = tostring(os.clock() - OldTime)
+--print("StratLoader Library's Loaded: ",Time)
+appendlog("StratLoader Library's Loaded: "..Time)
 
 --repeat wait() until game:IsLoaded()
 if not game:IsLoaded() then
@@ -272,12 +493,209 @@ if game.PlaceId == 3260590327 and Config[game:GetService("Players").LocalPlayer.
     TeleportHandler(3260590327,Min,Max)
     return
 end
+local Time = tostring(os.clock() - OldTime)
+--print("Library's Time Loaded:",Time)
+appendlog("Library's Time Loaded: "..Time)
+Loader() --Main Core
+
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
-print("Library's Time Loaded:",os.clock() - OldTime)
+if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active) then
+    function GetPlayersList(name)
+        if type(name) ~= "table" then
+            return {}
+        end
+        local namelist = {}
+        for i,v in next,name do
+            if tostring(i) then
+                table.insert(namelist,tostring(i))
+            end
+        end
+        return namelist
+    end
 
-if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
-    Loader()
+    local w = library:CreateWindow('Strat Loader')
+    local PlayerName,PlayerRemove = {},""
 
+    local InfoTable = {"Coins", "Gems","Level"}
+    w:Section("Player: "..game:GetService("Players").LocalPlayer.DisplayName.."")
+    w:Toggle("Auto Add Current User",{default = true, flag = "autoyourself"},function(bool)
+        if bool then
+            table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
+        else
+            for i=1,#PlayerName do
+                if PlayerName[i] == game:GetService("Players").LocalPlayer.Name then
+                    table.remove(PlayerName,i)
+                end
+            end
+        end
+    end)
+    w:Section("Choose Strat")
+    local stratname = w:SearchBox("Strat Name", {
+        flag = "StratFullName",
+        list = GetFilesName("StratLoader",{"UserConfig","UserLogs"},false)
+    },function()
+        print(w.flags.StratFullName)
+    end)
+    w:Button("Refresh Strat Name Box",function()
+        stratname(GetFilesName("StratLoader",{"UserConfig","UserLogs"},false))
+    end)
+    w:Section("Add Players Same Config")
+    w:AddBox("Player Name",{flag = "plrname"},function(value)
+        if #string.gsub(value, "%s*%p*", "") > 0 then
+            --if (value:match(" ") or value:match(",")) then
+            local str = string.gsub(tostring(value),","," ")
+            local strs = string.split(str, " ")
+            PlayerName = {}
+            if w.flags.autoyourself then
+                table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
+            end
+            for i = 1, #strs do
+                if #strs[i] > 0 then
+                    table.insert(PlayerName,strs[i])
+                end
+            end
+        else
+            PlayerName = {}
+            if w.flags.autoyourself then
+                table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
+            end
+        end
+    end)
+    w:Section("Remove Players Same Config")
+    local rplr = w:SearchBox("Remove Player", {
+        location = _G;
+        flag = "RemovePlr";
+        list = GetPlayersList(getgenv().Config)
+    }, function(value)
+        if #string.gsub(value, "%s*%p*", "") > 0 then
+            if (value:match(" ") or value:match(",")) then
+                local str = string.gsub(tostring(value),","," ")
+                local strs = string.split(str, " ")
+                PlayerRemove = {}
+                for i = 1, #strs do
+                    if #strs[i] > 0 then
+                        table.insert(PlayerRemove,strs[i])
+                    end
+                end
+            else
+                PlayerRemove = value
+            end
+        else
+            PlayerRemove = ""
+        end
+    end)
+    w:Section("Limit Progress")
+    w:Toggle("Enable Limit",{flag = "limit"})
+    w:Dropdown("Type Of Limit", {
+        flag = "Typelimitsetting";
+        list = {
+            "Coins";
+            "Gems";
+            'Level';
+        }
+    })
+    w:Box('Amount', {
+        flag = "AmountNumber";
+        default = 0;
+        type = 'number';
+    })
+    w:Toggle("Auto ShutDown Game",{flag = "shutdown"})
+    w:Toggle("Auto Remove Config",{flag = "autoremconfig"})
+    w:Section("Apply Strat Config Below")
+    w:Button("Apply",function()
+        if PlayerRemove then
+            if type(PlayerRemove) == "table" and PlayerRemove[1] then
+                for i =1, #PlayerRemove do
+                    Config[PlayerRemove[i]] = nil
+                    rplr(GetPlayersList(getgenv().Config))
+                end
+            else
+                Config[PlayerRemove] = nil
+                rplr(GetPlayersList(getgenv().Config))
+            end
+        end
+        if w.flags.StratFullName and isfile(GetFilePath("StratLoader",w.flags.StratFullName)) then
+            if not (type(PlayerName) == "table" and #PlayerName > 0) then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Strat Loader",
+                    Text = "Put Player Name You Want To Use With Strat.";
+                    Duration = 5;
+                })
+            else
+                for i =1, #PlayerName do
+                    if PlayerName[i] ~= PlayerRemove then
+                        Config[PlayerName[i]] = {
+                            Active = true,
+                            StratName = w.flags.StratFullName or "",
+                            Limit = w.flags.limit or false,
+                            TypeLimit = w.flags.Typelimitsetting or "Coins",
+                            Amount = w.flags.AmountNumber or 0,
+                            AutoShut = w.flags.shutdown or false,
+                            AutoRemove = w.flags.autoremconfig or false,
+                        }
+                        game.StarterGui:SetCore("SendNotification", {
+                            Title = "Strat Loader",
+                            Text = "Name: "..PlayerName[i].."\nStrat: "..w.flags.StratFullName;
+                            Duration = 5;
+                        })
+                    end
+                end
+                rplr(GetPlayersList(getgenv().Config))
+            end
+            writefile("StratLoader/UserConfig/Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Strat Loader",
+                Text = "Put Strat Name.";
+                Duration = 5;
+            })
+        end
+    end)
+    w:Button("Start",function()
+        if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
+            local JLFEnabled = FeatureConfig["JoinLessFeature"].Enabled
+            if JLFEnabled and #game:GetService("Players"):GetChildren() >= FeatureConfig["JoinLessFeature"].ActiveWhen then
+                local Min = FeatureConfig["JoinLessFeature"].MinPlr
+                local Max = FeatureConfig["JoinLessFeature"].MaxPlr
+                TeleportHandler(3260590327,Min,Max)
+                return
+            end
+            for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+                if v:IsA("Frame") and v.Name == "Strat Loader" then
+                    v.Parent.Parent:Destroy()
+                end
+            end
+            Loader()
+        end
+    end)
+
+    w:Button("Print Config",function()
+        for i,v in next,getgenv().Config do
+            if type(v) == "table" then
+                for i2,v2 in next,v do
+                    print(i,i2,v2)
+                end
+            else
+                print(i,v)
+            end
+        end
+    end)
+    w:Button("Re-Execute",function()
+        for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+            if v:IsA("Frame") and v.Name == "Strat Loader" then
+                v.Parent.Parent:Destroy()
+            end
+        end
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/StratLoader", true))()
+    end)
+    w:Button("Delete Gui",function()
+        for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+            if v:IsA("Frame") and v.Name == "Strat Loader" then
+                v.Parent.Parent:Destroy()
+            end
+        end
+    end)
+else
     library:CreateWindow('PlaceHolder')
     if game.PlaceId == 5591597781 then
         library:CreateWindow('PlaceHolder')
@@ -289,271 +707,15 @@ if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetServic
             v.Position = UDim2.new(0, 215, 0, 0)
         end
     end
-
-    --Feature Setting Tab
-    local s = library:CreateWindow('Feature Settings')
-    s:Toggle("Enable GPU Limit",{default = FeatureConfig["GPULimit"], flag = "gpulimit"})
-    s:Section("Join Less Feature")
-    s:Toggle("Enable",{default = FeatureConfig["GPULimit"], flag = "joinlesstoggle"})
-    s:Box("Active When Server Is", {
-        default = FeatureConfig["JoinLessFeature"].ActiveWhen;
-        flag = "serverplaying";
-        type = 'number';
-    })
-    s:Box("Min Players", {
-        default = FeatureConfig["JoinLessFeature"].MinPlr;
-        flag = "minplr";
-        type = 'number';
-    })
-    s:Box("Max Players", {
-        default = FeatureConfig["JoinLessFeature"].MaxPlr;
-        flag = "maxplr";
-        type = 'number';
-    })
-    s:Section("Apply Feature Config Below")
-    s:Button("Apply",function()
-        if not (s.flags.serverplaying >= s.flags.maxplr) then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Strat Loader",
-                Text = "'Active When Server Is' Value Must Not Lower Than Max Players Value";
-                Duration = 5;
-            })
-        elseif not (s.flags.maxplr >= s.flags.minplr) then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Strat Loader",
-                Text = "Max Players Value Must Not Lower Than Min Players Value";
-                Duration = 5;
-            })
-        else
-            FeatureConfig = {
-                ["JoinLessFeature"] = {
-                    Enabled = s.flags.joinlesstoggle or false;
-                    ActiveWhen = s.flags.serverplaying or 12;
-                    MinPlr = s.flags.minplr or 1;
-                    MaxPlr = s.flags.maxplr or 3;
-                },
-                ["GPULimit"] = s.flags.gpulimit or false
-            }
-            writefile("StratLoader\\UserConfig\\FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
-        end
-    end)
-    s:Section("Cancel Strat")
-    s:Button("Abort Progress",function()
-        Config[game:GetService("Players").LocalPlayer.Name].Active = false
-        writefile("StratLoader\\UserConfig\\Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
-        game:GetService("TeleportService"):Teleport(3260590327)
-    end)
-
-    --Credit Tab
-    local d = library:CreateWindow('Credits')
-    d:Section("Strat Loader")
-    d:Section(Version)
-    d:Button("Changelog:")
-    for i = 1,#Changelog do
-        if type(Changelog[i]) == "string" then
-            d:Section(Changelog[i])
-        end
-    end
-    return
 end
-function GetPlayersList(name)
-    if type(name) ~= "table" then
-        return {}
-    end
-    local namelist = {}
-    for i,v in next,name do
-        if tostring(i) then
-            table.insert(namelist,tostring(i))
-        end
-    end
-    return namelist
-end
-
-local w = library:CreateWindow('Strat Loader')
-local s = library:CreateWindow('Feature Settings')
-local d = library:CreateWindow('Credits')
-local PlayerName,PlayerRemove = {},""
-
-local InfoTable = {"Coins", "Gems","Level"}
-w:Section("Player: "..game:GetService("Players").LocalPlayer.DisplayName.."")
-w:Toggle("Auto Add Current User",{default = true, flag = "autoyourself"},function(bool)
-    if bool then
-        table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
-    else
-        for i=1,#PlayerName do
-            if PlayerName[i] == game:GetService("Players").LocalPlayer.Name then
-                table.remove(PlayerName,i)
-            end
-        end
-    end
-end)
-w:Section("Choose Strat")
-local stratname = w:SearchBox("Strat Name", {
-    flag = "StratFullName",
-    list = GetFilesName("StratLoader","UserConfig",false)
-},function()
-    print(w.flags.StratFullName)
-end)
-w:Button("Refresh Strat Name Box",function()
-    stratname(GetFilesName("StratLoader","UserConfig",false))
-end)
-w:Section("Add Players Same Config")
-w:AddBox("Player Name",{flag = "plrname"},function(value)
-    if #string.gsub(value, "%s*%p*", "") > 0 then
-        --if (value:match(" ") or value:match(",")) then
-        local str = string.gsub(tostring(value),","," ")
-        local strs = string.split(str, " ")
-        PlayerName = {}
-        if w.flags.autoyourself then
-            table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
-        end
-        for i = 1, #strs do
-            if #strs[i] > 0 then
-                table.insert(PlayerName,strs[i])
-            end
-        end
-    else
-        PlayerName = {}
-        if w.flags.autoyourself then
-            table.insert(PlayerName,game:GetService("Players").LocalPlayer.Name)
-        end
-    end
-end)
-w:Section("Remove Players Same Config")
-local rplr = w:SearchBox("Remove Player", {
-    location = _G;
-    flag = "RemovePlr";
-    list = GetPlayersList(getgenv().Config)
-}, function(value)
-    if #string.gsub(value, "%s*%p*", "") > 0 then
-        if (value:match(" ") or value:match(",")) then
-            local str = string.gsub(tostring(value),","," ")
-            local strs = string.split(str, " ")
-            PlayerRemove = {}
-            for i = 1, #strs do
-                if #strs[i] > 0 then
-                    table.insert(PlayerRemove,strs[i])
-                end
-            end
-        else
-            PlayerRemove = value
-        end
-    else
-        PlayerRemove = ""
-    end
-end)
-w:Section("Limit Progress")
-w:Toggle("Enable Limit",{flag= "limit"})
-w:Dropdown("Type Of Limit", {
-    flag = "Typelimitsetting";
-    list = {
-        "Coins";
-        "Gems";
-        'Level';
-    }
-})
-w:Box('Amount', {
-    flag = "AmountNumber";
-    default = 0;
-    type = 'number';
-})
-w:Toggle("Auto ShutDown Game",{flag = "shutdown"})
-w:Toggle("Auto Remove Config",{flag = "autoremconfig"})
-w:Section("Apply Strat Config Below")
-w:Button("Apply",function()
-    if PlayerRemove then
-        if type(PlayerRemove) == "table" and PlayerRemove[1] then
-            for i =1, #PlayerRemove do
-                Config[PlayerRemove[i]] = nil
-                rplr(GetPlayersList(getgenv().Config))
-            end
-        else
-            Config[PlayerRemove] = nil
-            rplr(GetPlayersList(getgenv().Config))
-        end
-    end
-    if w.flags.StratFullName and isfile(GetFilePath("StratLoader",w.flags.StratFullName)) then
-        if not (type(PlayerName) == "table" and #PlayerName > 0) then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Strat Loader",
-                Text = "Put Player Name You Want To Use With Strat.";
-                Duration = 5;
-            })
-        else
-            print(1)
-            for i =1, #PlayerName do
-                if PlayerName[i] ~= PlayerRemove then
-                    Config[PlayerName[i]] = {
-                        Active = true,
-                        StratName = w.flags.StratFullName or "",
-                        Limit = w.flags.limit or false,
-                        TypeLimit = w.flags.Typelimitsetting or "Coins",
-                        Amount = w.flags.AmountNumber or 0,
-                        AutoShut = w.flags.shutdown or false,
-                        AutoRemove = w.flags.autoremconfig or false,
-                    }
-                    game.StarterGui:SetCore("SendNotification", {
-                        Title = "Strat Loader",
-                        Text = "Name: "..PlayerName[i].."\nStrat: "..w.flags.StratFullName;
-                        Duration = 5;
-                    })
-                end
-            end
-            rplr(GetPlayersList(getgenv().Config))
-        end
-        print(2)
-        writefile("StratLoader\\UserConfig\\Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
-        print(3)
-    else
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Strat Loader",
-            Text = "Put Strat Name.";
-            Duration = 5;
-        })
-    end
-end)
-w:Button("Start",function()
-    if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
-        local JLFEnabled = FeatureConfig["JoinLessFeature"].Enabled
-        if JLFEnabled and #game:GetService("Players"):GetChildren() >= FeatureConfig["JoinLessFeature"].ActiveWhen then
-            local Min = FeatureConfig["JoinLessFeature"].MinPlr
-            local Max = FeatureConfig["JoinLessFeature"].MaxPlr
-            TeleportHandler(3260590327,Min,Max)
-            return
-        end
-        for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-            if v:IsA("Frame") and v.Name == "Strat Loader" then
-                v.Parent.Parent:Destroy()
-            end
-        end
-        Loader()
-    end
-end)
-
-w:Button("Print Config",function()
-    for i,v in next,getgenv().Config do
-        if type(v) == "table" then
-            for i2,v2 in next,v do
-                print(i,i2,v2)
-            end
-        else
-            print(i,v)
-        end
-    end
-end)
-w:Button("Re-Execute",function()
-    for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-        if v:IsA("Frame") and v.Name == "Strat Loader" then
-            v.Parent.Parent:Destroy()
-        end
-    end
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/StratLoader", true))()
-end)
 
 --Feature Setting Tab
-s:Toggle("Enable GPU Limit",{default = FeatureConfig["GPULimit"], flag = "gpulimit"})
+local s = library:CreateWindow('Feature Settings')
+local d = library:CreateWindow('Credits')
+s:Toggle("Enable GPU Limit",{default = FeatureConfig["GPULimit"] or false, flag = "gpulimit"})
+s:Toggle("Enable Custom Log",{default = FeatureConfig["CustomLog"] or false, flag = "customlog"})
 s:Section("Join Less Feature")
-s:Toggle("Enable",{default = FeatureConfig["GPULimit"], flag = "joinlesstoggle"})
+s:Toggle("Enable",{default = FeatureConfig["JoinLessFeature"].Enabled or false, flag = "joinlesstoggle"})
 s:Box("Active When Server Is", {
     default = FeatureConfig["JoinLessFeature"].ActiveWhen;
     flag = "serverplaying";
@@ -591,34 +753,15 @@ s:Button("Apply",function()
                 MinPlr = s.flags.minplr or 1;
                 MaxPlr = s.flags.maxplr or 3;
             },
-            ["GPULimit"] = s.flags.gpulimit or false
+            ["GPULimit"] = s.flags.gpulimit or false,
+            ["CustomLog"] = s.flags.customlog or false,
         }
-        writefile("StratLoader\\UserConfig\\FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
+        writefile("StratLoader/UserConfig/FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
     end
 end)
 s:Button("MeMayBeo Feature")
 
---[[w:Section("Status:")
-w:Section("Strat: Coins")
-
-if table.find(InfoTable,Limit) then
-    w:Section("Limit: Enabled")
-    w:Section("Type: ".._G.Typelimitsetting.."")
-    if not Amount then
-        Amount = 0
-    end
-    w:Section("Amount: ".._G.AmountNumber.."")
-else
-    w:Section("Limit: Disabled")
-end]]
-w:Button("Delete Gui",function()
-    for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-        if v:IsA("Frame") and v.Name == "Strat Loader" then
-            v.Parent.Parent:Destroy()
-        end
-    end
-end)
-
+--Credits Tab
 d:Section(Version)
 d:Button("Changelog:")
 for i = 1,#Changelog do
@@ -626,4 +769,6 @@ for i = 1,#Changelog do
         d:Section(Changelog[i])
     end
 end
-print("Time Loaded:",os.clock() - OldTime)
+local Time = tostring(os.clock() - OldTime)
+--print("Total Time Loaded:",Time)
+appendlog("Total Time Loaded: "..Time)
