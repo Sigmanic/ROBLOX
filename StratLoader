@@ -13,7 +13,7 @@ local LoadInfo = [[
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
 
 --Below here is the library of Strat Loader
-local Version = "Version: 0.4 Buid 1 Dev-Beta"
+local Version = "Version: 0.4 Buid 2 Dev-Beta"
 local Changelog = {"!!Require hookmetamethod()","Added New Replace Webhook","Added Player's Log","Low Graphic When GPULimit","Fix A Bug In JLS Toggle"}
 
 local gethiddenproperty = gethiddenproperty or gethiddenprop or get_hidden_property or get_hidden_prop or getpropvalue
@@ -21,7 +21,7 @@ local sethiddenproperty = sethiddenproperty or sethiddenprop or set_hidden_prope
 assert(readfile, 'Exploit is missing readfile function')
 assert(listfiles, 'Exploit is missing listfiles function')
 assert(isfile, 'Exploit is missing isfile function')
-assert(hookmetamethod, 'Exploit is missing isfile function')
+assert(hookmetamethod, 'Exploit is missing hookmetamethod function')
 
 getgenv().Config = {}
 getgenv().FeatureConfig = {
@@ -93,13 +93,17 @@ repeat wait() until game:GetService("Players").LocalPlayer
 local writelog = function(str)
     task.spawn(function()
         print(str)
-        return WriteFile(Config[game:GetService("Players").LocalPlayer.Name],game:GetService("Players").LocalPlayer.Name.."'s log","StratLoader/UserLogs",tostring(str))
+        if Config[game:GetService("Players").LocalPlayer.Name] then
+            return WriteFile(Config[game:GetService("Players").LocalPlayer.Name],game:GetService("Players").LocalPlayer.Name.."'s log","StratLoader/UserLogs",tostring(str))
+        end
     end)
 end
 local appendlog = function(str)
     task.spawn(function()
         print(str)
-        return AppendFile(Config[game:GetService("Players").LocalPlayer.Name],game:GetService("Players").LocalPlayer.Name.."'s log","StratLoader/UserLogs",tostring(str).."\n")
+        if Config[game:GetService("Players").LocalPlayer.Name] then
+            return AppendFile(Config[game:GetService("Players").LocalPlayer.Name],game:GetService("Players").LocalPlayer.Name.."'s log","StratLoader/UserLogs",tostring(str).."\n")
+        end
     end)
 end
 writelog("--------------------------- Profile Log ---------------------------"..
