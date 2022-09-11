@@ -109,8 +109,8 @@ end
 writelog("--------------------------- Profile Log ---------------------------"..
 "\nLog Date ("..os.date("%X").." "..os.date("%x")..")"..
 "\nName: " ..game:GetService("Players").LocalPlayer.Name.." | DisplayName: " ..game:GetService("Players").LocalPlayer.DisplayName..
-"\nActive Status: "..tostring(Config[game:GetService("Players").LocalPlayer.Name].Active)..
-"\nStrat Name: "..tostring(Config[game:GetService("Players").LocalPlayer.Name].StratName)..
+"\nActive Status: "..tostring(Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active)..
+"\nStrat Name: "..tostring(Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].StratName)..
 "\n--------------------------- Feature Log ---------------------------"..
 "\nGPU Limit: "..tostring(FeatureConfig["GPULimit"])..
 "\nCustom Log: "..tostring(FeatureConfig["CustomLog"])..
