@@ -13,7 +13,7 @@ local LoadInfo = [[
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
 
 --Below here is the library of Strat Loader
-local Version = "Version: 0.4 Buid 2 Dev-Beta"
+local Version = "Version: 0.4 Buid 3 Dev-Beta"
 local Changelog = {"!!Require hookmetamethod()","Added New Replace Webhook","Added Player's Log","Low Graphic When GPULimit","Fix A Bug In JLS Toggle"}
 
 local gethiddenproperty = gethiddenproperty or gethiddenprop or get_hidden_property or get_hidden_prop or getpropvalue
@@ -309,7 +309,7 @@ for i,v in next,GetFilesName("StratLoader",{"UserConfig","UserLogs"},false) do
         LoadStrat[v] = loadfile(strat)
     else
         --print("Can't Find File Name:",v)
-        appendlog("Can't Find File Name "..tostring(v).."Or It's Content Has Been Corrupted")
+        appendlog("Can't Find File Name "..'"'..tostring(v)..'"'.." Or It's Content Has Been Corrupted")
     end
 end
 
@@ -427,7 +427,7 @@ function Loader()
                                         "\n**Won Experience : **" ..Content.Rewards.Experience.TextLabel.Text..
                                         "\n**Won " ..CheckRewardStr..
                                         "\n**----------------- TROOPS INFO -----------------**"..CheckTower()..
-                                        "\n**-----------------------------------------------**"
+                                        "\n**----------------------------------------------------**"
                                         ,
                                         ["type"] = "rich",
                                         ["color"] = CheckColor(),
@@ -520,7 +520,6 @@ if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetS
     local w = library:CreateWindow('Strat Loader')
     local PlayerName,PlayerRemove = {},""
 
-    local InfoTable = {"Coins", "Gems","Level"}
     w:Section("Player: "..game:GetService("Players").LocalPlayer.DisplayName.."")
     w:Toggle("Auto Add Current User",{default = true, flag = "autoyourself"},function(bool)
         if bool then
@@ -541,7 +540,7 @@ if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetS
         print(w.flags.StratFullName)
     end)
     w:Button("Refresh Strat Name Box",function()
-        stratname(GetFilesName("StratLoader",{"UserConfig","UserLogs"},false))
+        stratname.Reload(GetFilesName("StratLoader",{"UserConfig","UserLogs"},false))
     end)
     w:Section("Add Players Same Config")
     w:AddBox("Player Name",{flag = "plrname"},function(value)
@@ -611,11 +610,11 @@ if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetS
             if type(PlayerRemove) == "table" and PlayerRemove[1] then
                 for i =1, #PlayerRemove do
                     Config[PlayerRemove[i]] = nil
-                    rplr(GetPlayersList(getgenv().Config))
+                    rplr.Reload(GetPlayersList(getgenv().Config))
                 end
             else
                 Config[PlayerRemove] = nil
-                rplr(GetPlayersList(getgenv().Config))
+                rplr.Reload(GetPlayersList(getgenv().Config))
             end
         end
         if w.flags.StratFullName and isfile(GetFilePath("StratLoader",w.flags.StratFullName)) then
@@ -644,7 +643,7 @@ if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetS
                         })
                     end
                 end
-                rplr(GetPlayersList(getgenv().Config))
+                rplr.Reload(GetPlayersList(getgenv().Config))
             end
             writefile("StratLoader/UserConfig/Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
         else
@@ -762,6 +761,12 @@ s:Button("Apply",function()
         }
         writefile("StratLoader/UserConfig/FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
     end
+end)
+s:Section("Cancel Strat")
+s:Button("Abort Progress",function()
+    Config[game:GetService("Players").LocalPlayer.Name].Active = false
+    writefile("StratLoader\\UserConfig\\Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
+    game:GetService("TeleportService"):Teleport(3260590327)
 end)
 s:Button("MeMayBeo Feature")
 
