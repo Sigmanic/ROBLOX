@@ -1,9 +1,9 @@
 local library = {count = 0, queue = {}, callbacks = {}, rainbowtable = {}, toggled = true, binds = {}};
 local defaults; do
     local dragger = {}; do
-        local mouse = game:GetService("Players").LocalPlayer:GetMouse();
+        local mouse        = game:GetService("Players").LocalPlayer:GetMouse();
         local inputService = game:GetService('UserInputService');
-        local heartbeat = game:GetService("RunService").Heartbeat;
+        local heartbeat    = game:GetService("RunService").Heartbeat;
         -- // credits to Ririchi / Inori for this cute drag function :)
         function dragger.new(frame)
             local s, event = pcall(function()
@@ -109,7 +109,7 @@ local defaults; do
             })
             
             if options.underlinecolor == "rainbow" then
-                table.insert(library.rainbowtable, newWindow:FindFirstChild('Underline'))
+                library.rainbowtable[newWindow:FindFirstChild('Underline')] = newWindow:FindFirstChild('Underline')
             end
 
             local window = setmetatable({
@@ -173,30 +173,37 @@ local defaults; do
             return c
         end
         
-        function types:Label(text)
-            local v = game:GetService'TextService':GetTextSize(text, 18, Enum.Font.SourceSans, Vector2.new(math.huge, math.huge))
+        function types:Label(display,rainbow)
+            local v = game:GetService'TextService':GetTextSize(display, 18, Enum.Font.SourceSans, Vector2.new(math.huge, math.huge))
             local object = library:Create('Frame', {
-                Size = UDim2.new(1, 0, 0, v.Y + 5);
+                Size = UDim2.new(1, 0, 0, v.Y+5);
                 BackgroundTransparency  = 1;
+                LayoutOrder = self:GetOrder();
                 library:Create('TextLabel', {
-                    Size = UDim2.new(1, 0, 1, 0);
+                
                     Position = UDim2.new(0, 10, 0, 0);
-                    LayoutOrder = self:GetOrder();
-
-                    Text = text;
+                    Size = UDim2.new(1, 0, 1, 0);
                     TextSize = 18;
                     Font = Enum.Font.SourceSans;
                     TextColor3 = Color3.fromRGB(255, 255, 255);
                     BackgroundTransparency = 1;
                     TextXAlignment = Enum.TextXAlignment.Left;
                     TextWrapped = true;
+                    Text = display;
                 });
-                Parent = self.container
+                Parent = self.container;
             })
+
             self:Resize();
+            if rainbow then
+                library.rainbowtable[object:FindFirstChild('TextLabel')] = object:FindFirstChild('TextLabel')
+            end
+            
+            return object:FindFirstChild('TextLabel');
         end
 
         function types:Toggle(name, options, callback)
+            options = options or {}
             local default  = options.default or false;
             local location = options.location or self.flags;
             local flag     = options.flag or "";
@@ -221,14 +228,15 @@ local defaults; do
                     TextStrokeTransparency = library.options.textstroke;
                     TextStrokeColor3 = library.options.strokecolor;
                     library:Create('TextButton', {
-                        Text = (location[flag] and utf8.char(10003) or "");
+                        
+                        Text = (library.options.toggledisplay == 'Check' and (location[flag] and utf8.char(10003) or "") or '');
                         Font = library.options.font;
                         TextSize = library.options.fontsize;
                         Name = 'Checkmark';
                         Size = UDim2.new(0, 20, 0, 20);
                         Position = UDim2.new(1, -25, 0, 4);
                         TextColor3 = library.options.textcolor;
-                        BackgroundColor3 = library.options.bgcolor;
+                        BackgroundColor3 = (library.options.toggledisplay == 'Fill' and(location[flag] and Color3.fromRGB(20,148,90) or Color3.fromRGB(175,35,35)) or library.options.bgcolor);
                         BorderColor3 = library.options.bordercolor;
                         TextStrokeTransparency = library.options.textstroke;
                         TextStrokeColor3 = library.options.strokecolor;
@@ -238,9 +246,13 @@ local defaults; do
             });
                 
             local function click(t)
-                location[flag] = not location[flag];
+                location[flag] = (not location[flag]);
                 callback(location[flag])
-                check:FindFirstChild(name).Checkmark.Text = location[flag] and utf8.char(10003) or "";
+                if library.options.toggledisplay == 'Check' then
+                    check:FindFirstChild(name).Checkmark.Text = location[flag] and utf8.char(10003) or "";
+                elseif library.options.toggledisplay == 'Fill' then
+                    check:FindFirstChild(name).Checkmark.BackgroundColor3 = location[flag] and Color3.fromRGB(20,148,90) or Color3.fromRGB(175,35,35)
+                end
             end
 
             check:FindFirstChild(name).Checkmark.MouseButton1Click:connect(click)
@@ -252,50 +264,63 @@ local defaults; do
 
             self:Resize();
             return {
-                Set = function(self, b)
+                Set = function(b)
                     location[flag] = b;
                     callback(location[flag])
-                    check:FindFirstChild(name).Checkmark.Text = location[flag] and utf8.char(10003) or "";
+                    if library.options.toggledisplay == 'Check' then
+                        check:FindFirstChild(name).Checkmark.Text = location[flag] and utf8.char(10003) or "";
+                    elseif library.options.toggledisplay == 'Fill' then
+                        check:FindFirstChild(name).Checkmark.BackgroundColor3 = location[flag] and Color3.fromRGB(20,148,90) or Color3.fromRGB(175,35,35)
+                    end
                 end
             }
         end
 
-    function types:AddBox(text, options, callback)
-        local location = options.location or self.flags;
-        local flag     = options.flag or "";
-        local callback = callback or function() end;
-
-        local check = library:Create('Frame', {
-            BackgroundTransparency = 1;
-            Size = UDim2.new(1, 0, 0, 25);
-            LayoutOrder = self:GetOrder();
-            library:Create('TextBox', {
-                Text = "";
-                PlaceholderText = text;
-                PlaceholderColor3 = Color3.fromRGB(60, 60, 60);
-                Size = UDim2.new(1, -10, 0, 20);
-                Position = UDim2.new(0, 5, 0, 4);
-                BackgroundColor3 = library.options.boxcolor;
-                TextColor3 = library.options.textcolor;
-                TextXAlignment = Enum.TextXAlignment.Center;
-                TextSize = library.options.fontsize;
-                Name = 'TextBox';
-                Font = library.options.font;
-                BorderColor3 = library.options.bordercolor;
-                TextStrokeTransparency = library.options.textstroke;
-                TextStrokeColor3 = library.options.strokecolor;
+        function types:TypeBox(name, options, callback)
+            options = options or {}
+            local location = options.location or self.flags;
+            local flag     = options.flag or "";
+            local callback = callback or function() end;
+    
+            local check = library:Create('Frame', {
+                BackgroundTransparency = 1;
+                Size = UDim2.new(1, 0, 0, 25);
+                LayoutOrder = self:GetOrder();
+                library:Create('TextBox', {
+                    Text = "";
+                    PlaceholderText = name;
+                    PlaceholderColor3 = Color3.fromRGB(60, 60, 60);
+                    Size = UDim2.new(1, -10, 0, 20);
+                    Position = UDim2.new(0, 5, 0, 4);
+                    BackgroundColor3 = library.options.boxcolor;
+                    ClipsDescendants = true;
+                    TextColor3 = library.options.textcolor;
+                    TextXAlignment = Enum.TextXAlignment.Center;
+                    TextSize = library.options.fontsize;
+                    Name = 'TextBox';
+                    Font = library.options.font;
+                    BorderColor3 = library.options.bordercolor;
+                    TextStrokeTransparency = library.options.textstroke;
+                    TextStrokeColor3 = library.options.strokecolor;
+                });
+                Parent = self.container;
             });
-            Parent = self.container;
-        });
-        local box = check:FindFirstChild('TextBox');
-        box.FocusLost:connect(function(e)
-            local old = location[flag];
-            location[flag] = tostring(box.Text)
-            callback(location[flag], old, e)
-        end)
-        self:Resize();
-        return box
-    end
+            local box = check:FindFirstChild('TextBox');
+            box:GetPropertyChangedSignal("Text"):Connect(function()
+                if box.TextBounds.X >= box.AbsoluteSize.X then
+                    box.TextXAlignment = Enum.TextXAlignment.Right
+                else
+                    box.TextXAlignment = Enum.TextXAlignment.Center
+                end
+            end)
+            box.FocusLost:connect(function(e)
+                local old = location[flag];
+                location[flag] = tostring(box.Text)
+                callback(location[flag], old, e)
+            end)
+            self:Resize();
+            return box
+        end
 
         function types:Button(name, callback)
             callback = callback or function() end;
@@ -308,10 +333,9 @@ local defaults; do
                     Name = name;
                     Text = name;
                     BackgroundColor3 = library.options.btncolor;
-
-                    BorderSizePixel = 0;
+                    BorderColor3 = library.options.bordercolor;
                     TextStrokeTransparency = library.options.textstroke;
-                    BackgroundTransparency = 0.5;
+                    BackgroundTransparency = 0.35;
                     TextStrokeColor3 = library.options.strokecolor;
                     TextColor3 = library.options.textcolor;
                     Position = UDim2.new(0, 5, 0, 5);
@@ -325,7 +349,7 @@ local defaults; do
             check:FindFirstChild(name).MouseButton1Click:connect(callback)
             self:Resize();
 
-            return {
+            return check:WaitForChild(name),{
                 Fire = function()
                     callback();
                 end
@@ -333,7 +357,8 @@ local defaults; do
         end
         
         function types:Box(name, options, callback) --type, default, data, location, flag)
-            local type   = options.type or "";
+            options = options or {}
+            local tipe   = options.type or "";
             local default = options.default or "";
             local data = options.data
             local location = options.location or self.flags;
@@ -342,15 +367,11 @@ local defaults; do
             local min      = options.min or 0;
             local max      = options.max or 9e9;
 
-            if type == 'number' then
-                if (tonumber(default)) then
-                    location[flag] = default;
-                else
-                    location[flag] = "";
-                    default = "";
-                end
-            else
+            if tipe == 'number' and tonumber(default) ~= nil then
                 location[flag] = default;
+            else
+                location[flag] = "";
+                default = "";
             end
 
             local check = library:Create('Frame', {
@@ -390,7 +411,7 @@ local defaults; do
             local box = check:FindFirstChild(name):FindFirstChild('Box');
             box.FocusLost:connect(function(e)
                 local old = location[flag];
-                if type == "number" then
+                if tipe == "number" then
                     local num = tonumber(box.Text)
                     if (not num) then
                         box.Text = tonumber(location[flag])
@@ -405,22 +426,40 @@ local defaults; do
                 callback(location[flag], old, e)
             end)
             
-            if type == 'number' then
+            if tipe == 'number' then
                 box:GetPropertyChangedSignal('Text'):connect(function()
                     box.Text = string.gsub(box.Text, "[%a+]", "");
                 end)
             end
+
+            local function SetNew(new)
+                if tipe == "number" then
+                    local num = tonumber(new)
+                    if (not num) then
+                        box.Text = tonumber(location[flag])
+                    else
+                        location[flag] = math.clamp(num, min, max)
+                        box.Text = tonumber(location[flag])
+                    end
+                else
+                    location[flag] = tostring(box.Text)
+                end
+            end
             
             self:Resize();
-            return box
+            return {
+                ['Box'] = box;
+                ['SetNew'] = SetNew;
+            }
         end
         
         function types:Bind(name, options, callback)
+            options = options or {}
             local location     = options.location or self.flags;
             local keyboardOnly = options.kbonly or false
             local flag         = options.flag or "";
             local callback     = callback or function() end;
-            local default      = options.default;
+            local default      = options.default or nil;
 
             if keyboardOnly and (not tostring(default):find('MouseButton')) then
                 location[flag] = default
@@ -483,7 +522,7 @@ local defaults; do
                 });
                 Parent = self.container;
             });
-            
+                
             local button = check:FindFirstChild(name).Keybind;
             button.MouseButton1Click:connect(function()
                 library.binding = true
@@ -528,7 +567,7 @@ local defaults; do
             self:Resize();
         end
     
-        function types:Section(name)
+        function types:Section(name,rainbow)
             local order = self:GetOrder();
             local determinedSize = UDim2.new(1, 0, 0, 25)
             local determinedPos = UDim2.new(0, 0, 0, 4);
@@ -565,10 +604,15 @@ local defaults; do
             });
         
             self:Resize();
+            if rainbow then
+                library.rainbowtable[check:FindFirstChild('section_lbl')] = check:FindFirstChild('section_lbl')
+            end
+            return check:FindFirstChild('section_lbl');
         end
 
         function types:Slider(name, options, callback)
-            local default = options.default or options.min;
+            options = options or {}
+            local default = options.default or options.min or 0;
             local min     = options.min or 0;
             local max      = options.max or 1;
             local location = options.location or self.flags;
@@ -599,20 +643,23 @@ local defaults; do
                         Size = UDim2.new(0, 60, 0, 20);
                         Position = UDim2.new(1, -65, 0, 3);
                         BackgroundTransparency = 1;
-                        --BorderColor3 = library.options.bordercolor;
+                        BorderColor3 = library.options.bordercolor;
                         BorderSizePixel = 0;
-                        library:Create('TextLabel', {
+                        library:Create('TextBox', {
                             Name = 'ValueLabel';
                             Text = default;
                             BackgroundTransparency = 1;
                             TextColor3 = library.options.textcolor;
-                            Position = UDim2.new(0, -10, 0, 0);
-                            Size     = UDim2.new(0, 1, 1, 0);
+                            Position = UDim2.new(0, -35, 0, 0);
+                            Size     = UDim2.new(0,30,0,20);
                             TextXAlignment = Enum.TextXAlignment.Right;
                             Font = library.options.font;
                             TextSize = library.options.fontsize;
                             TextStrokeTransparency = library.options.textstroke;
                             TextStrokeColor3 = library.options.strokecolor;
+                            BackgroundColor3 = library.options.boxcolor;
+                            BorderColor3 = library.options.bordercolor;
+                            PlaceholderColor3 = library.options.placeholdercolor;
                         });
                         library:Create('TextButton', {
                             Name = 'Button';
@@ -641,6 +688,42 @@ local defaults; do
 
             local overlay = check:FindFirstChild(name);
 
+            local box = overlay:FindFirstChild('Container'):FindFirstChild('ValueLabel');
+            box.Focused:connect(function()
+                box.BackgroundTransparency = 0
+            end)
+            box.FocusLost:connect(function(e)
+                local old = location[flag];
+                local num = tonumber(box.Text)
+                box.BackgroundTransparency = 1
+                if (not num) then
+                    box.Text = tonumber(location[flag])
+                else
+                    if num < min then
+                        num = min
+                    elseif num > max then
+                        num = max
+                    end
+
+                    local percent = 1 - ((max - num) / (max - min))
+                    local number  = num 
+
+                    number = tonumber(string.format("%.2f", number))
+                    if (not precise) then
+                        number = math.floor(number)
+                    end
+
+                    overlay.Container.Button.Position  = UDim2.new(math.clamp(percent, 0, 0.99), 0,  0, 1) 
+                    box.Text  = number
+                    location[flag] = number
+                    callback(number)
+                end
+            end)
+            
+            box:GetPropertyChangedSignal('Text'):connect(function()
+                box.Text = string.gsub(box.Text, "[%a+]", "");
+            end)
+
             local renderSteppedConnection;
             local inputBeganConnection;
             local inputEndedConnection;
@@ -661,10 +744,10 @@ local defaults; do
 
                         overlay.Container.Button.Position = UDim2.new(math.clamp(percent, 0, 0.99), 0, 0, 1)
                         
-                        local num = min + (max - min) * percent
+                        local num = min + math.floor((max - min) * percent * 100)/100
                         local value = (precise and num or math.floor(num))
 
-                        overlay.Container.ValueLabel.Text = value;
+                        box.Text = value;
                         callback(tonumber(value))
                         location[flag] = tonumber(value)
                     end)
@@ -699,6 +782,12 @@ local defaults; do
             end)    
 
             if default ~= min then
+                if default < min then
+                    default = min
+                elseif default > max then
+                    default = max
+                end
+
                 local percent = 1 - ((max - default) / (max - min))
                 local number  = default 
 
@@ -708,12 +797,18 @@ local defaults; do
                 end
 
                 overlay.Container.Button.Position  = UDim2.new(math.clamp(percent, 0, 0.99), 0,  0, 1) 
-                overlay.Container.ValueLabel.Text  = number
+                box.Text  = number
             end
 
             self:Resize();
             return {
-                Set = function(self, value)
+                Set = function(value)
+                    if value < min then
+                        value = min
+                    elseif value > max then
+                        value = max
+                    end
+
                     local percent = 1 - ((max - value) / (max - min))
                     local number  = value 
 
@@ -723,7 +818,7 @@ local defaults; do
                     end
 
                     overlay.Container.Button.Position  = UDim2.new(math.clamp(percent, 0, 0.99), 0,  0, 1) 
-                    overlay.Container.ValueLabel.Text  = number
+                    box.Text  = number
                     location[flag] = number
                     callback(number)
                 end
@@ -731,6 +826,7 @@ local defaults; do
         end 
 
         function types:SearchBox(text, options, callback)
+            options = options or {}
             local list = options.list or {};
             local flag = options.flag or "";
             local location = options.location or self.flags;
@@ -755,27 +851,29 @@ local defaults; do
                     BorderColor3 = library.options.bordercolor;
                     TextStrokeTransparency = library.options.textstroke;
                     TextStrokeColor3 = library.options.strokecolor;
-                    library:Create('ScrollingFrame', {
-                        Position = UDim2.new(0, 0, 1, 1);
-                        Name = 'Container';
-                        BackgroundColor3 = library.options.btncolor;
-                        ScrollBarThickness = 0;
-                        BorderSizePixel = 0;
-                        BorderColor3 = library.options.bordercolor;
-                        Size = UDim2.new(1, 0, 0, 0);
-                        library:Create('UIListLayout', {
-                            Name = 'ListLayout';
-                            SortOrder = Enum.SortOrder.LayoutOrder;
-                        });
-                        ZIndex = 2;
+                    ClipsDescendants = true;
+                });
+                library:Create('ScrollingFrame', { --Move it here so it doesnt conflict with textbox
+                    Position = UDim2.new(0, 0, 1, 1);
+                    Name = 'Container';
+                    BackgroundColor3 = library.options.btncolor;
+                    ScrollBarThickness = 0;
+                    BorderSizePixel = 0;
+                    BorderColor3 = library.options.bordercolor;
+                    ScrollingDirection = Enum.ScrollingDirection.Y;
+                    Size = UDim2.new(1, 0, 0, 0);
+                    library:Create('UIListLayout', {
+                        Name = 'ListLayout';
+                        SortOrder = Enum.SortOrder.LayoutOrder;
                     });
+                    ZIndex = 2;
                 });
                 Parent = self.container;
             })
 
             local function rebuild(text)
-                box:FindFirstChild('Box').Container.ScrollBarThickness = 0
-                for i, child in next, box:FindFirstChild('Box').Container:GetChildren() do
+                box:FindFirstChild('Container').ScrollBarThickness = 0
+                for i, child in next, box:FindFirstChild('Container'):GetChildren() do
                     if (not child:IsA('UIListLayout')) then
                         child:Destroy();
                     end
@@ -784,6 +882,7 @@ local defaults; do
                 if #text > 0 then
                     for i, v in next, list do
                         if string.sub(string.lower(v), 1, string.len(text)) == string.lower(text) or v:lower():match(text:lower()) then
+                            print("1",text)
                             local button = library:Create('TextButton', {
                                 Text = v;
                                 Font = library.options.font;
@@ -792,14 +891,17 @@ local defaults; do
                                 BorderColor3 = library.options.bordercolor;
                                 TextStrokeTransparency = library.options.textstroke;
                                 TextStrokeColor3 = library.options.strokecolor;
-                                Parent = box:FindFirstChild('Box').Container;
+                                Parent = box:FindFirstChild('Container');
                                 Size = UDim2.new(1, 0, 0, 20);
                                 LayoutOrder = i;
                                 BackgroundColor3 = library.options.btncolor;
                                 ZIndex = 2;
                             })
-
+                            if button.TextBounds.X >= button.AbsoluteSize.X then
+                                button.TextScaled = true
+                            end
                             button.MouseButton1Click:connect(function()
+                                print(3)
                                 busy = true;
                                 box:FindFirstChild('Box').Text = button.Text;
                                 task.wait();
@@ -808,51 +910,60 @@ local defaults; do
                                 location[flag] = button.Text;
                                 callback(location[flag])
 
-                                box:FindFirstChild('Box').Container.ScrollBarThickness = 0
-                                for i, child in next, box:FindFirstChild('Box').Container:GetChildren() do
+                                box:FindFirstChild('Container').ScrollBarThickness = 0
+                                for i, child in next, box:FindFirstChild('Container'):GetChildren() do
                                     if (not child:IsA('UIListLayout')) then
                                         child:Destroy();
                                     end
                                 end
-                                box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quad', 0.25, true)
+                                box:FindFirstChild('Container'):TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quad', 0.25, true)
+                                print(4)
                             end)
                         end
                     end
                 end
 
-                local c = box:FindFirstChild('Box').Container:GetChildren()
+                local c = box:FindFirstChild('Container'):GetChildren()
                 local ry = (20 * (#c)) - 20
 
                 local y = math.clamp((20 * (#c)) - 20, 0, 100)
                 if ry > 100 then
-                    box:FindFirstChild('Box').Container.ScrollBarThickness = 5;
+                    box:FindFirstChild('Container').ScrollBarThickness = 5;
                 end
 
-                box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, y), 'Out', 'Quad', 0.25, true)
-                box:FindFirstChild('Box').Container.CanvasSize = UDim2.new(1, 0, 0, (20 * (#c)) - 20)
+                box:FindFirstChild('Container'):TweenSize(UDim2.new(1, 0, 0, y), 'Out', 'Quad', 0.25, true)
+                box:FindFirstChild('Container').CanvasSize = UDim2.new(1, 0, 0, (20 * (#c)) - 20)
             end
 
             local check = box:FindFirstChild('Box');
             check.FocusLost:connect(function(e)
                 wait()
+                print(1.2)
                 if (not busy) and check.Text == "" then
                     location[flag] = tostring(check.Text);
                     callback(location[flag])
                 end
                 wait(.1)
 
-                box:FindFirstChild('Box').Container.ScrollBarThickness = 0
-                for i, child in next, box:FindFirstChild('Box').Container:GetChildren() do
+                box:FindFirstChild('Container').ScrollBarThickness = 0
+                for i, child in next, box:FindFirstChild('Container'):GetChildren() do
                     if (not child:IsA('UIListLayout')) then
                         child:Destroy();
                     end
                 end
-                box:FindFirstChild('Box').Container:TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quad', 0.25, true)
+                print(1.2)
+                box:FindFirstChild('Container'):TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quad', 0.25, true)
+                print(1.4)
             end);
 
             box:FindFirstChild('Box'):GetPropertyChangedSignal('Text'):connect(function()
                 if (not busy) then
                     rebuild(box:FindFirstChild('Box').Text)
+                end
+                if box:FindFirstChild('Box').TextBounds.X >= box:FindFirstChild('Box').AbsoluteSize.X then
+                    box:FindFirstChild('Box').TextXAlignment = Enum.TextXAlignment.Right
+                else
+                    box:FindFirstChild('Box').TextXAlignment = Enum.TextXAlignment.Center
                 end
             end);
 
@@ -861,20 +972,26 @@ local defaults; do
                 rebuild("")
             end
             self:Resize();
-            return reload, box:FindFirstChild('Box');
+            return {['Reload'] = reload;
+                ['Box'] = box:FindFirstChild('Box');
+            }
         end
         
+        
         function types:Dropdown(name, options, callback)
+            options = options or {}
             local location = options.location or self.flags;
             local flag = options.flag or "";
             local callback = callback or function() end;
             local list = options.list or {};
+            local default = options.default or list[1]
+            local colors = options.colors or {}
 
-            location[flag] = list[1]
+            location[flag] = default or list[1]
             local check = library:Create('Frame', {
                 BackgroundTransparency = 1;
                 Size = UDim2.new(1, 0, 0, 25);
-                BackgroundColor3 = Color3.fromRGB(10, 10, 10);
+                BackgroundColor3 = Color3.fromRGB(25, 25, 25);
                 BorderSizePixel = 0;
                 LayoutOrder = self:GetOrder();
                 library:Create('Frame', {
@@ -887,8 +1004,8 @@ local defaults; do
                     library:Create('TextLabel', {
                         Name = 'Selection';
                         Size = UDim2.new(1, 0, 1, 0);
-                        Text = list[1];
-                        TextColor3 = library.options.textcolor;
+                        Text = location[flag];
+                        TextColor3 = colors[v] or library.options.textcolor;
                         BackgroundTransparency = 1;
                         Font = library.options.font;
                         TextSize = library.options.fontsize;
@@ -966,13 +1083,13 @@ local defaults; do
                         LayoutOrder = i;
                         Parent = container;
                         ZIndex = 5;
-                        TextColor3 = library.options.textcolor;
+                        TextColor3 = colors[v] or library.options.textcolor;
                         TextStrokeTransparency = library.options.textstroke;
                         TextStrokeColor3 = library.options.strokecolor;
                     })
                     
                     btn.MouseButton1Click:connect(function()
-                        check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = library.options.textcolor
+                        check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = colors[v] or library.options.textcolor
                         check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').Text = btn.Text;
 
                         location[flag] = tostring(btn.Text);
@@ -997,7 +1114,7 @@ local defaults; do
                 
                 input = game:GetService('UserInputService').InputBegan:connect(function(a)
                     if a.UserInputType == Enum.UserInputType.MouseButton1 and (not isInGui(container)) then
-                        check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = library.options.textcolor
+                        check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = colors[v] or library.options.textcolor
                         check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').Text       = location[flag];
 
                         container:TweenSize(UDim2.new(1, 0, 0, 0), 'In', 'Quad', 0.15, true)
@@ -1010,20 +1127,162 @@ local defaults; do
             end)
             
             self:Resize();
-            local function reload(self, array)
-                options = array;
-                location[flag] = array[1];
+            local function reload(array,default)
+                list = array;
+                location[flag] = default or array[1];
                 pcall(function()
                     input:disconnect()
                 end)
                 check:WaitForChild('dropdown_lbl').Selection.Text = location[flag]
-                check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = library.options.textcolor
+                check:FindFirstChild('dropdown_lbl'):WaitForChild('Selection').TextColor3 = colors[v] or library.options.textcolor
                 game:GetService('Debris'):AddItem(container, 0)
             end
 
             return {
                 Refresh = reload;
             }
+        end
+        function types:DropSection(name)
+            local check = library:Create('Frame', {
+                Name = 'DropSection';
+                BackgroundTransparency = 1;
+                Size = UDim2.new(1,0,0,25);
+                BackgroundColor3 = library.options.sectncolor;
+                BorderSizePixel = 0;
+                LayoutOrder = self:GetOrder();
+        
+                library:Create('Frame',{
+                    Name = 'SectionFrame';
+                    BackgroundTransparency = 1;
+                    Position = UDim2.new(0, 5, 0, 4);
+                    Size = UDim2.new(1, -10, 0, 20);
+                    BackgroundColor3 = library.options.sectncolor;
+                    BorderSizePixel = 0;
+                
+                    library:Create('TextLabel', {
+                        Name = 'section_lbl';
+                        Text = name;
+                        BackgroundTransparency = 0;
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = library.options.sectncolor;
+                        TextColor3 = library.options.textcolor;
+                        Position = UDim2.new();
+                        Size     = UDim2.new(1, 0, 1, 0);
+                        Font = library.options.font;
+                        TextSize = library.options.fontsize;
+                        TextStrokeTransparency = library.options.textstroke;
+                        TextStrokeColor3 = library.options.strokecolor;
+                    });
+                    library:Create("TextButton", {
+                        Name = 'drop';
+                        BackgroundTransparency = 1;
+                        Size = UDim2.new(0, 20, 1, 0);
+                        Position = UDim2.new(1, -25, 0, 0);
+                        Text = 'v';
+                        TextColor3 = library.options.textcolor;
+                        Font = library.options.font;
+                        TextSize = library.options.fontsize;
+                        TextStrokeTransparency = library.options.textstroke;
+                        TextStrokeColor3 = library.options.strokecolor;
+                    });
+                });
+                Parent = self.container;
+            });
+            local Container = library:Create('Frame',{
+                Name = 'Container';
+                BackgroundTransparency = 0;
+                Size = UDim2.new();
+                Position = UDim2.new(0,0,0,25);
+                BackgroundTransparency = 1;
+                BorderSizePixel = 0;
+                Visible = false;
+                Parent = check;
+                library:Create('UIListLayout', {
+                    Name = 'List';
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                });
+            });
+            
+            local button = check:FindFirstChild('SectionFrame').drop;
+            local input;
+            local dropped = false
+            local dropping = false
+            local droptypes = types
+            droptypes.__index = droptypes
+            local Dropper = setmetatable({
+                count = 0;
+                object = check;
+                container = Container;
+                toggled = false;
+                flags   = {};
+        
+            }, droptypes)
+
+        
+            button.MouseButton1Click:connect(function()
+                if dropping == false then
+                    dropping = true
+                    local newcheck
+                    local newcon
+                    local newy
+                    if dropped == false then
+                        dropped = true
+                    
+                        local c = 0;
+                        for i, v in next, Container:GetChildren() do
+                            if v:IsA('Frame') then
+                                c = c + v.Size.Y.Offset;
+                            end
+                        end
+                        c = c +2
+            
+                        local size = UDim2.new(1, 0, 0, c)
+            
+                        local clampedSize;
+                        local scrollSize = 0;
+                        
+                        local goSize = (clampedSize ~= nil and clampedSize) or size;
+                        newcheck = goSize+UDim2.new(0,0,0,25)
+                        newcon = goSize
+            
+            
+                        newy = UDim2.new(1,0,0,(self.container.Size.Y.Offset+newcon.Y.Offset))
+                        self.container:TweenSize(newy,'Out','Quad',0.1,true)
+                        check:TweenSize(newcheck, 'Out', 'Quad', 0.15, true)
+                        Container:TweenSize(goSize, 'Out', 'Quad', 0.15, true)
+                        
+                        button.Text = '^'
+                        Container.Visible = true
+                        Container.ClipsDescendants = false
+                    elseif dropped == true then
+                        dropped = false
+                        local c = 0;
+            
+                        local size = UDim2.new(1, 0, 0, c)
+            
+                        local clampedSize;
+                        local scrollSize = 0;
+                        
+                        local goSize = (clampedSize ~= nil and clampedSize) or size;
+                        newcheck = UDim2.new(1,0,0,25)
+                        newcon = goSize
+                        newy = UDim2.new(1,0,0,(self.container.Size.Y.Offset-Container.Size.Y.Offset))
+                        Container.ClipsDescendants = true
+                        
+                        Container:TweenSize(goSize, 'Out', 'Quad', 0.13, true)
+                        check:TweenSize(newcheck, 'Out', 'Quad', 0.14, true)
+                        self.container:TweenSize(newy,'Out','Quad',0.15,true)
+                        
+                        
+                        button.Text = 'v'
+                        Container.Visible = false
+                    end
+                    repeat wait() until check.Size == newcheck and Container.Size == newcon
+                    dropping = false
+                end
+            end)
+            self:Resize();
+            return Dropper
         end
     end
     
@@ -1071,6 +1330,7 @@ local defaults; do
         topcolor       = Color3.fromRGB(30, 30, 30);
         titlecolor     = Color3.fromRGB(255, 255, 255);
         
+        
         underlinecolor = "rainbow";
         bgcolor        = Color3.fromRGB(30, 30, 30);    -- Background Color
         boxcolor       = Color3.fromRGB(30, 30, 30);    -- Box Inner Color
@@ -1095,15 +1355,22 @@ local defaults; do
 
         placeholdercolor = Color3.fromRGB(255, 255, 255);
         titlestrokecolor = Color3.fromRGB(0, 0, 0);
+
+        toggledisplay = 'Check';
     }
 
     library.options = setmetatable({}, {__index = default})
 
     spawn(function()
+        local props = {
+            ['Frame'] = 'BackgroundColor3';
+            ['TextLabel'] = 'TextColor3';
+            ['TextButton'] = 'TextColor3';	
+        }
         while true do
             for i=0, 1, 1 / 300 do              
                 for _, obj in next, library.rainbowtable do
-                    obj.BackgroundColor3 = Color3.fromHSV(i, 1, 1);
+                    obj[props[obj.ClassName]] = Color3.fromHSV(i, 1, 1);
                 end
                 wait()
             end;
@@ -1137,5 +1404,3 @@ local defaults; do
         end
     end)
 end
-
-return library
