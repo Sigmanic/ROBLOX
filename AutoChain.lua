@@ -62,15 +62,11 @@ function Single()
 	local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 	local w = library:CreateWindow('Auto Chain Single')
 	w:Toggle('Active Auto Chain', {flag = "autochain"},function(value) StatusTable["autochain"] = value end)
-	w:Section('Commander 1: None')
-	w:Section('Commander 2: None')
-	w:Section('Commander 3: None')
+	StatusTable[1] = w:Section('Commander 1: None')
+	StatusTable[2] = w:Section('Commander 2: None')
+	StatusTable[3] = w:Section('Commander 3: None')
 	w:Button("Switch To Double Chain",function()
-		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-			if v:IsA("Frame") and v.Name == "Auto Chain Single" then
-				v.Parent.Parent:Destroy()
-			end
-		end
+        w["object"].Parent.Parent:Destroy()
 		CancelLoop = true
 		getgenv().TowerAdded:Disconnect()
 		getgenv().TowerRemoved:Disconnect()
@@ -78,11 +74,7 @@ function Single()
 		Double()
 	end)
 	w:Button("Delete Gui",function()
-		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-			if v:IsA("Frame") and v.Name == "Auto Chain Single" then
-				v.Parent.Parent:Destroy()
-			end
-		end
+        w["object"].Parent.Parent:Destroy()
 		CancelLoop = true
 		if not KeepTracking then
 			getgenv().TowerAdded:Disconnect()
@@ -91,11 +83,6 @@ function Single()
 		StatusTable = nil
 		getgenv().AlrExecAC = false
 	end)
-	for i,v in pairs(game.CoreGui:GetDescendants()) do
-		if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text:match("Commander") and v.Text:match("None") then
-			StatusTable[tonumber(v.Text:match("%d+"))] = v
-		end
-	end
 	local function Status(Index,Text)
 		if not StatusTable then
 			return
@@ -261,19 +248,15 @@ function Double()
 	local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 	local w = library:CreateWindow('Auto Chain Double')
 	w:Toggle('Auto Chain Group 1', {flag = "autochain"},function(value) StatusTable["autochain"] = value end)
-	w:Section('Commander 1: None')
-	w:Section('Commander 2: None')
-	w:Section('Commander 3: None')
+	StatusTable[1] = w:Section('Commander 1: None')
+	StatusTable[2] = w:Section('Commander 2: None')
+	StatusTable[3] = w:Section('Commander 3: None')
 	w:Toggle('Auto Chain Group 2', {flag = "autochain1"},function(value) StatusTable["autochain1"] = value end)
-	w:Section('Commander 4: None')
-	w:Section('Commander 5: None')
-	w:Section('Commander 6: None')
+	StatusTable[4] = w:Section('Commander 4: None')
+	StatusTable[5] = w:Section('Commander 5: None')
+	StatusTable[6] = w:Section('Commander 6: None')
 	w:Button("Switch To Single Chain",function()
-		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-			if v:IsA("Frame") and v.Name == "Auto Chain Double" then
-				v.Parent.Parent:Destroy()
-			end
-		end
+        w["object"].Parent.Parent:Destroy()
 		CancelLoop = true
 		getgenv().TowerAdded:Disconnect()
 		getgenv().TowerRemoved:Disconnect()
@@ -281,11 +264,7 @@ function Double()
 		Single()
 	end)
 	w:Button("Delete Gui",function()
-		for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-			if v:IsA("Frame") and v.Name == "Auto Chain Double" then
-				v.Parent.Parent:Destroy()
-			end
-		end
+        w["object"].Parent.Parent:Destroy()
 		CancelLoop = true
 		if not KeepTracking then
 			getgenv().TowerAdded:Disconnect()
@@ -294,11 +273,6 @@ function Double()
 		StatusTable = nil
 		getgenv().AlrExecAC = false
 	end)
-	for i,v in pairs(game.CoreGui:GetDescendants()) do
-		if v:IsA("TextLabel") and v.Name == "section_lbl" and v.Text:match("Commander") and v.Text:match("None") then
-			StatusTable[tonumber(v.Text:match("%d+"))] = v
-		end
-	end
 	local function Status(Index,Text)
 		if not StatusTable then
 			return
