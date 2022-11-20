@@ -32,7 +32,7 @@ local CancelLoop = false
 getgenv().TowerAdded = nil
 getgenv().TowerRemoved = nil
 local FirstCom = true
-local GetMouse = LocalPlayer:GetMouse()
+local GetMouse = game:GetService("Players").LocalPlayer:GetMouse()
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 local w = library:CreateWindow('TDS Toolkit')
 local Toggle = w:Toggle('Auto Chain Main', {flag = "autochain"},function(value) StatusTable["autochain"] = value end)
