@@ -1,20 +1,12 @@
 --Strat may failed to load duo to character death lead to HumanoidRootPart missing --Strat issue but i may give a fix for this
 if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
 local OldTime = os.clock()
-local LoadInfo = [[
-    StratLoader("Name Of The Strat",
-    {"Username1","Username2","Username3","Username4"},
-    "Type Of Grindind",Amount)
-    StratLoader("scout",
-    {"Username1","fthiend999","Username3","Username4"})
-    StratLoader("Ultimate_FalMol","haigta45","Coins")
-    StratLoader("gminigunner","mIzIBiis5235")
-]]
+
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
 
 --Below here is the library of Strat Loader
-local Version = "Version: 0.4 Buid 3 Dev-Beta"
-local Changelog = {"!!Require hookmetamethod()","Added New Replace Webhook","Added Player's Log","Low Graphic When GPULimit","Fix A Bug In JLS Toggle"}
+local Version = "Version: 0.5 Buid 1 Dev-Beta"
+local Changelog = {"!!Require hookmetamethod()","Supported Old V2 Format","Fixed Tower Info"}
 
 local gethiddenproperty = gethiddenproperty or gethiddenprop or get_hidden_property or get_hidden_prop or getpropvalue
 local sethiddenproperty = sethiddenproperty or sethiddenprop or set_hidden_property or set_hidden_prop or setpropvalue
@@ -87,6 +79,41 @@ local function AppendFile(check,name,location,str)
         appendfile(location.."/"..name..".txt",str)
     else
         error("Argument 2 must be a string got " .. tostring(number))
+    end
+end
+do
+    if type(LoadInfo) == "string" then
+        local InfoTable = {"Coins", "Gems","Level"}
+        function StratLoader(Strat,Player,Info,Amount)
+            if type(Player) == "table" then
+                for i,v in next,Player do
+                    if not Config[v] then
+                        Config[v] = {
+                            Active = (Strat and true) or false,
+                            StratName = Strat or "",
+                            Limit = (table.find(InfoTable, Info) and Amount and true) or false,
+                            TypeLimit = (table.find(InfoTable, Info) and Info) or "Coins",
+                            Amount = Amount or 0,
+                            AutoShut = false,
+                            AutoRemove = false,
+                        }
+                        writefile("StratLoader/UserConfig/Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
+                    end
+                end
+            elseif type(Player) == "string" and not Config[Player] then
+                Config[Player] = {
+                    Active = (Strat and true) or false,
+                    StratName = Strat or "",
+                    Limit = (table.find(InfoTable, Info) and Amount and true) or false,
+                    TypeLimit = (table.find(InfoTable, Info) and Info) or "Coins",
+                    Amount = Amount or 0,
+                    AutoShut = false,
+                    AutoRemove = false,
+                }
+                writefile("StratLoader/UserConfig/Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
+            end
+        end
+        loadstring(LoadInfo)()
     end
 end
 repeat wait() until game:GetService("Players").LocalPlayer
@@ -316,7 +343,7 @@ end
 function Loader()
     if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
         local GetConfig = Config[game:GetService("Players").LocalPlayer.Name]
-        local StratName = LoadStrat[GetConfig.StratName]
+        local StratName = LoadStrat[GetFilesName("StratLoader",GetConfig.StratName)]
         local Limit = GetConfig.Limit
         if game.PlaceId == 3260590327 and Limit and tonumber(game:GetService("Players").LocalPlayer:WaitForChild(GetConfig.TypeLimit).Value) >= GetConfig.Amount then
             if GetConfig.AutoRemove then
@@ -385,7 +412,7 @@ function Loader()
                                     end
                                 end
                                 for i,v in next,game.CoreGui:GetDescendants() do
-                                    if v:IsA("Frame") and v.Name == "Counter" then
+                                    if v:IsA("Frame") and v.Name == "Auto Strats" then
                                         for i2,v2 in next,v.container:GetChildren() do
                                             if v2:IsA("Frame") and table.find(troops,string.split(v2:FindFirstChild("section_lbl").Text," : ")[1]) then
                                                 str = str.."\n**"..string.split(v2:FindFirstChild("section_lbl").Text," : ")[1].." : **"..string.split(v2:FindFirstChild("section_lbl").Text," : ")[2]
