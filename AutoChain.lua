@@ -19,6 +19,7 @@
 	This Script Is Open-source, Feel Free To Change Anything.
 	Credit: Sigmanic (Sigmanic#6607 --Main Account, Thomas Andrew#8787 --Second Account)
 ]]--
+if game.PlaceId ~= 5591597781 then return end
 --getgenv().PreferDouble = true	--Remove the first "--" if you want to use double chain.
 getgenv().KeepTracking = true	--Recommended turn this on.
 getgenv().DebugModes = false
