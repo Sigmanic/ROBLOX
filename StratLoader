@@ -5,7 +5,7 @@ local OldTime = os.clock()
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
 
 --Below here is the library of Strat Loader
-local Version = "Version: 0.5 Buid 1 Dev-Beta"
+local Version = "Version: 0.5 Buid 2 Dev-Beta"
 local Changelog = {"!!Require hookmetamethod()","Supported Old V2 Format","Fixed Tower Info"}
 
 local gethiddenproperty = gethiddenproperty or gethiddenprop or get_hidden_property or get_hidden_prop or getpropvalue
@@ -185,7 +185,7 @@ local function TeleportHandler(Id,MinPlayers,MaxPlayers)
     local GetServers = GetServersInfo(Id,MinPlayers,MaxPlayers)
     local FailedConnection = game:GetService("TeleportService").TeleportInitFailed:Connect(function(Player, Result, Msg)
         if Player == game:GetService("Players").LocalPlayer then
-            if Result == Enum.TeleportResult.Unauthorized or Result == Enum.TeleportResult.GameEnded then
+            if Result == Enum.TeleportResult.Unauthorized or Result == Enum.TeleportResult.GameEnded or Result == Enum.TeleportResult.GameFull then
                 table.remove(GetServers,IdRandom)
                 if not GetServers[1] then 
                     MinPlayers = MaxPlayers - 1
@@ -328,17 +328,21 @@ getgenv().MinimizeClient = function(boolean)
     end
 end
 local LoadStrat = {}
+local ErrorFile = {}
+appendlog("Loaded File:")
 for i,v in next,GetFilesName("StratLoader",{"UserConfig","UserLogs"},false) do
     local strat = GetFilePath("StratLoader",v)
     if strat and isfile(strat) and tostring(loadfile(strat)) ~= "nil" then
         --print(v,loadfile(strat))
-        appendlog('Load File Name "'..tostring(v)..'": '..tostring(loadfile(strat)))
+        appendlog("+ "..tostring(v)..": "..tostring(loadfile(strat)))
         LoadStrat[v] = loadfile(strat)
     else
+        table.insert(ErrorFile,tostring(v))
         --print("Can't Find File Name:",v)
-        appendlog("Can't Find File Name "..'"'..tostring(v)..'"'.." Or It's Content Has Been Corrupted")
+        --appendlog("Can't Find File Name "..'"'..tostring(v)..'"'.." Or It's Content Has Been Corrupted")
     end
 end
+appendlog("File Failed To Load: \n + "..table.concat(ErrorFile,"\n + "))
 
 function Loader()
     if Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active then
@@ -373,7 +377,9 @@ function Loader()
                 if not (FeatureConfig["CustomLog"] or FeatureConfig["JoinLessFeature"].Enabled) then
                     return
                 end
-                local GameGui = game:GetService("Players").LocalPlayer.PlayerGui.GameGui
+                local SendRequest = http_request or request or HttpPost or syn.request
+                local LocalPlayer = game:GetService("Players").LocalPlayer
+                local GameGui = LocalPlayer.PlayerGui.GameGui
                 local Content = GameGui.Results.Content
                 local OldIndex
                 OldIndex = hookmetamethod(game,"__index",function(...)
@@ -385,10 +391,9 @@ function Loader()
                 end)
                 GameGui.Results:GetPropertyChangedSignal("Visible"):Connect(function()
                     if readfile("TDS_AutoStrat/Webhook (Logs).txt") ~= "WEBHOOK HERE" then
+                        local CheckRequest
                         task.spawn(function()
-                            local SendRequest = http_request or request or HttpPost or syn.request
                             local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                            local LocalPlayer = game:GetService("Players").LocalPlayer
                             local function CheckMode()
                                 for i,v in next,Content.Titles:GetChildren() do
                                     if v.Name ~= "Triumph2" and v.Visible == true then
@@ -414,7 +419,7 @@ function Loader()
                                 for i,v in next,game.CoreGui:GetDescendants() do
                                     if v:IsA("Frame") and v.Name == "Auto Strats" then
                                         for i2,v2 in next,v.container:GetChildren() do
-                                            if v2:IsA("Frame") and table.find(troops,string.split(v2:FindFirstChild("section_lbl").Text," : ")[1]) then
+                                            if v2:IsA("Frame") and v2:FindFirstChild("section_lbl") and table.find(troops,string.split(v2:FindFirstChild("section_lbl").Text," : ")[1]) then
                                                 str = str.."\n**"..string.split(v2:FindFirstChild("section_lbl").Text," : ")[1].." : **"..string.split(v2:FindFirstChild("section_lbl").Text," : ")[2]
                                             end
                                         end
@@ -469,10 +474,10 @@ function Loader()
                                     ["content-type"] = "application/json"
                                 }
                             }
-                            SendRequest(SendData)
+                            CheckRequest = SendRequest(SendData)
                         end)
+                        repeat wait() until type(CheckRequest) == "table"
                     end
-                    wait()
                     if FeatureConfig["JoinLessFeature"].Enabled then
                         local Min = FeatureConfig["JoinLessFeature"].MinPlr
                         local Max = FeatureConfig["JoinLessFeature"].MaxPlr
@@ -509,6 +514,7 @@ function Loader()
         end)
     end
 end
+getgenv().UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 local Time = tostring(os.clock() - OldTime)
 --print("StratLoader Library's Loaded: ",Time)
 appendlog("StratLoader Library's Loaded: "..Time)
@@ -529,7 +535,7 @@ local Time = tostring(os.clock() - OldTime)
 appendlog("Library's Time Loaded: "..Time)
 Loader() --Main Core
 
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
+--getgenv().UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sigmanic/ROBLOX/main/ModificationWallyUi", true))()
 if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetService("Players").LocalPlayer.Name].Active) then
     function GetPlayersList(name)
         if type(name) ~= "table" then
@@ -544,7 +550,7 @@ if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetS
         return namelist
     end
 
-    local w = library:CreateWindow('Strat Loader')
+    local w = UILibrary:CreateWindow('Strat Loader')
     local PlayerName,PlayerRemove = {},""
 
     w:Section("Player: "..game:GetService("Players").LocalPlayer.DisplayName.."")
@@ -725,23 +731,29 @@ if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetS
             end
         end
     end)
-else
-    library:CreateWindow('PlaceHolder')
+elseif not FeatureConfig["ModdedAS"] then
+    local Holder1 = UILibrary:CreateWindow('PlaceHolder')
+    Holder1["object"].Visible = false
     if game.PlaceId == 5591597781 then
-        library:CreateWindow('PlaceHolder')
+        local Holder2 = UILibrary:CreateWindow('PlaceHolder')
+        Holder2["object"].Visible = false
+        if type(getgenv().StratCreditsAuthor) == "string" then
+            local Holder3 = UILibrary:CreateWindow('PlaceHolder')
+            Holder3["object"].Visible = false
+        end
     end
     for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
-        if v:IsA("Frame") and v.Name == "PlaceHolder" then
-            v.Visible = false
-        elseif v:IsA("Frame") and v.Name == "Camera" then
+        if v:IsA("Frame") and v.Name == "Camera" then
             v.Position = UDim2.new(0, 215, 0, 0)
+        elseif v:IsA("Frame") and v.Name == "Credits" then
+            v.Position = UDim2.new(0, 415, 0, 0)
         end
     end
 end
 
 --Feature Setting Tab
-local s = library:CreateWindow('Feature Settings')
-local d = library:CreateWindow('Credits')
+local s = UILibrary:CreateWindow('Feature Settings')
+local d = UILibrary:CreateWindow('Credits')
 s:Toggle("Enable GPU Limit",{default = FeatureConfig["GPULimit"] or false, flag = "gpulimit"})
 s:Toggle("Enable Custom Log",{default = FeatureConfig["CustomLog"] or false, flag = "customlog"})
 s:Section("Join Less Feature")
