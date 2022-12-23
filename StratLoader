@@ -731,7 +731,7 @@ if not (Config[game:GetService("Players").LocalPlayer.Name] and Config[game:GetS
             end
         end
     end)
-elseif not FeatureConfig["ModdedAS"] then
+else
     local Holder1 = UILibrary:CreateWindow('PlaceHolder')
     Holder1["object"].Visible = false
     if game.PlaceId == 5591597781 then
