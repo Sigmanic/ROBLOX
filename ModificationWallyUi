@@ -871,7 +871,7 @@ local defaults; do
                 Parent = self.container;
             })
 
-            local function rebuild(text)
+            local function rebuild(text,skip)
                 box:FindFirstChild('Container').ScrollBarThickness = 0
                 for i, child in next, box:FindFirstChild('Container'):GetChildren() do
                     if (not child:IsA('UIListLayout')) then
@@ -879,10 +879,9 @@ local defaults; do
                     end
                 end
 
-                if #text > 0 then
+                if #text > 0 or skip then
                     for i, v in next, list do
                         if string.sub(string.lower(v), 1, string.len(text)) == string.lower(text) or v:lower():match(text:lower()) then
-                            print("1",text)
                             local button = library:Create('TextButton', {
                                 Text = v;
                                 Font = library.options.font;
@@ -900,12 +899,9 @@ local defaults; do
                             if button.TextBounds.X >= button.AbsoluteSize.X then
                                 button.TextScaled = true
                             end
-                            button.MouseButton1Click:connect(function()
-                                print(3)
+                            button.MouseButton1Down:connect(function()
                                 busy = true;
                                 box:FindFirstChild('Box').Text = button.Text;
-                                task.wait();
-                                busy = false;
 
                                 location[flag] = button.Text;
                                 callback(location[flag])
@@ -917,7 +913,6 @@ local defaults; do
                                     end
                                 end
                                 box:FindFirstChild('Container'):TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quad', 0.25, true)
-                                print(4)
                             end)
                         end
                     end
@@ -936,14 +931,28 @@ local defaults; do
             end
 
             local check = box:FindFirstChild('Box');
-            check.FocusLost:connect(function(e)
-                wait()
-                print(1.2)
-                if (not busy) and check.Text == "" then
+            check.Focused:connect(function()
+                rebuild(box:FindFirstChild('Box').Text,true)
+                if box:FindFirstChild('Box').TextBounds.X >= box:FindFirstChild('Box').AbsoluteSize.X then
+                    box:FindFirstChild('Box').TextXAlignment = Enum.TextXAlignment.Right
+                else
+                    box:FindFirstChild('Box').TextXAlignment = Enum.TextXAlignment.Center
+                end
+            end)
+            check.FocusLost:connect(function(enterboolean)
+                task.wait(.12)
+                if busy then
+                    busy = false;
+                    return;
+                end
+                if check.Text == "" then
                     location[flag] = tostring(check.Text);
                     callback(location[flag])
+                elseif enterboolean and box:FindFirstChild('Container'):GetChildren()[2] then
+                    check.Text = box:FindFirstChild('Container'):GetChildren()[2].Text;
+                    location[flag] =box:FindFirstChild('Container'):GetChildren()[2].Text;
+                    callback(location[flag])
                 end
-                wait(.1)
 
                 box:FindFirstChild('Container').ScrollBarThickness = 0
                 for i, child in next, box:FindFirstChild('Container'):GetChildren() do
@@ -951,9 +960,7 @@ local defaults; do
                         child:Destroy();
                     end
                 end
-                print(1.2)
                 box:FindFirstChild('Container'):TweenSize(UDim2.new(1, 0, 0, 0), 'Out', 'Quad', 0.25, true)
-                print(1.4)
             end);
 
             box:FindFirstChild('Box'):GetPropertyChangedSignal('Text'):connect(function()
@@ -967,12 +974,17 @@ local defaults; do
                 end
             end);
 
+            local function refresh(new_list)
+                list = new_list;
+            end
             local function reload(new_list)
                 list = new_list;
                 rebuild("")
             end
             self:Resize();
-            return {['Reload'] = reload;
+            return {
+                ['Reload'] = reload;
+                ['Refresh'] = refresh;
                 ['Box'] = box:FindFirstChild('Box');
             }
         end
