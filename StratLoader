@@ -1,5 +1,12 @@
 --Strat may failed to load duo to character death lead to HumanoidRootPart missing --Strat issue but i may give a fix for this
 if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
+if isfile("StratLoader/UserConfig/FeatureConfig.txt") then
+    local FeatureConfig = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader/UserConfig/FeatureConfig.txt"))
+    if FeatureConfig["DevTest"] then
+        loadstring(game:HttpGet("https://gist.githubusercontent.com/Sigmanic/3aa425b9ad96a913f822335d58ad074d/raw/DevTest", true))()
+        return
+    end
+end
 local OldTime = os.clock()
 
 getgenv().ExecDis = true --Don't remove this. It's necessary since the "Built In Auto Exec" can break the strat.
@@ -807,7 +814,16 @@ s:Button("Abort Progress",function()
     writefile("StratLoader\\UserConfig\\Config.txt", cloneref(game:GetService("HttpService")):JSONEncode(Config))
     game:GetService("TeleportService"):Teleport(3260590327)
 end)
-s:Button("MeMayBeo Feature")
+s:Button("MeMayBeo Feature (DevTest)",function()
+    FeatureConfig["DevTest"] = true
+    writefile("StratLoader/UserConfig/FeatureConfig.txt", cloneref(game:GetService("HttpService")):JSONEncode(FeatureConfig))
+    for i,v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if v:IsA("Frame") and v.Name == "Strat Loader" then
+            v.Parent.Parent:Destroy()
+        end
+    end
+    loadstring(game:HttpGet("https://gist.githubusercontent.com/Sigmanic/3aa425b9ad96a913f822335d58ad074d/raw/DevTest", true))()
+end)
 
 --Credits Tab
 d:Section(Version)
