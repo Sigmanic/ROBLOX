@@ -1170,7 +1170,7 @@ local defaults; do
                     Size = UDim2.new(1, -10, 0, 20);
                     BackgroundColor3 = library.options.sectncolor;
                     BorderSizePixel = 0;
-                
+
                     library:Create('TextLabel', {
                         Name = 'section_lbl';
                         Text = name;
@@ -1188,12 +1188,13 @@ local defaults; do
                     library:Create("TextButton", {
                         Name = 'drop';
                         BackgroundTransparency = 1;
-                        Size = UDim2.new(0, 20, 1, 0);
-                        Position = UDim2.new(1, -25, 0, 0);
-                        Text = 'v';
+                        Size = UDim2.new(1, -5, 1, 0);
+                        Position = UDim2.new();
+                        Text = "-";
                         TextColor3 = library.options.textcolor;
                         Font = library.options.font;
                         TextSize = library.options.fontsize;
+                        TextXAlignment = Enum.TextXAlignment.Right;
                         TextStrokeTransparency = library.options.textstroke;
                         TextStrokeColor3 = library.options.strokecolor;
                     });
@@ -1225,12 +1226,13 @@ local defaults; do
                 count = 0;
                 object = check;
                 container = Container;
+                textframe = check.SectionFrame.section_lbl;
                 toggled = false;
                 flags   = {};
         
             }, droptypes)
-
         
+            
             button.MouseButton1Click:connect(function()
                 if dropping == false then
                     dropping = true
@@ -1263,7 +1265,7 @@ local defaults; do
                         check:TweenSize(newcheck, 'Out', 'Quad', 0.15, true)
                         Container:TweenSize(goSize, 'Out', 'Quad', 0.15, true)
                         
-                        button.Text = '^'
+                        button.Text = "+"
                         Container.Visible = true
                         Container.ClipsDescendants = false
                     elseif dropped == true then
@@ -1286,7 +1288,7 @@ local defaults; do
                         self.container:TweenSize(newy,'Out','Quad',0.15,true)
                         
                         
-                        button.Text = 'v'
+                        button.Text = "-"
                         Container.Visible = false
                     end
                     repeat wait() until check.Size == newcheck and Container.Size == newcon
@@ -1294,6 +1296,9 @@ local defaults; do
                 end
             end)
             self:Resize();
+            function Dropper:SetText(text)
+                self.textframe.Text = (type(text) == "string" and text) or "";
+            end
             return Dropper
         end
     end
