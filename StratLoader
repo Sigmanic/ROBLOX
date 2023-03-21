@@ -3,7 +3,7 @@ if game.PlaceId ~= 3260590327 and game.PlaceId ~= 5591597781 then return end
 if isfile("StratLoader/UserConfig/FeatureConfig.txt") then
     local FeatureConfig = cloneref(game:GetService("HttpService")):JSONDecode(readfile("StratLoader/UserConfig/FeatureConfig.txt"))
     if FeatureConfig["DevTest"] then
-        loadstring(game:HttpGet("https://gist.githubusercontent.com/Sigmanic/3aa425b9ad96a913f822335d58ad074d/raw/DevTest", true))()
+        loadstring(game:HttpGet("https://gist.githubusercontent.com/Sigmanic/3aa425b9ad96a913f822335d58ad074d/raw/DevTest.lua", true))()
         return
     end
 end
@@ -822,7 +822,7 @@ s:Button("MeMayBeo Feature (DevTest)",function()
             v.Parent.Parent:Destroy()
         end
     end
-    loadstring(game:HttpGet("https://gist.githubusercontent.com/Sigmanic/3aa425b9ad96a913f822335d58ad074d/raw/DevTest", true))()
+    loadstring(game:HttpGet("https://gist.githubusercontent.com/Sigmanic/3aa425b9ad96a913f822335d58ad074d/raw/DevTest.lua", true))()
 end)
 
 --Credits Tab
