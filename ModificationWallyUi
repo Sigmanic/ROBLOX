@@ -280,6 +280,8 @@ local defaults; do
             options = options or {}
             local location = options.location or self.flags;
             local flag     = options.flag or "";
+            local default = options.default or "";
+            local cleartext = options.cleartext or (options.cleartext == nil and true);
             local callback = callback or function() end;
     
             local check = library:Create('Frame', {
@@ -287,7 +289,8 @@ local defaults; do
                 Size = UDim2.new(1, 0, 0, 25);
                 LayoutOrder = self:GetOrder();
                 library:Create('TextBox', {
-                    Text = "";
+                    Text = default;
+                    ClearTextOnFocus = cleartext;
                     PlaceholderText = name;
                     PlaceholderColor3 = Color3.fromRGB(60, 60, 60);
                     Size = UDim2.new(1, -10, 0, 20);
