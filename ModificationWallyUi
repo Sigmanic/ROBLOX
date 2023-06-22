@@ -283,6 +283,8 @@ local defaults; do
             local default = options.default or "";
             local cleartext = options.cleartext or (options.cleartext == nil and true);
             local callback = callback or function() end;
+
+            location[flag] = default;
     
             local check = library:Create('Frame', {
                 BackgroundTransparency = 1;
