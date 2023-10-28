@@ -5,7 +5,20 @@ local ItemName = "Pumpkin"
 local ItemTable = {}
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local Pickups = Workspace.Pickups
-for Index, Object in next, Pickups:GetChildren() do
+while true do
+    for Index, Object in next, Pickups:GetChildren() do
+        if Object:IsA("MeshPart") and string.find(Object.Name:lower(),ItemName:lower()) and Object.CFrame.Y < 200 then
+            if not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                repeat task.wait() until LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            end
+            LocalPlayer.Character.HumanoidRootPart.Anchored = false
+            LocalPlayer.Character.HumanoidRootPart.CFrame = Object.CFrame
+        end
+    end
+    task.wait()
+end
+
+--[[for Index, Object in next, Pickups:GetChildren() do
     if Object:IsA("MeshPart") and string.find(Object.Name:lower(),ItemName:lower()) and not table.find(ItemTable,Object) then
         table.insert(ItemTable,Object)
     end
@@ -31,4 +44,4 @@ task.spawn(function()
             end
         end
     end
-end)
+end)]]
