@@ -2,7 +2,6 @@ if game.PlaceId ~= 5591597781 then return end
 getgenv().DefaultCam = 1
 repeat wait() until game:IsLoaded()
 local ItemName = "Pumpkin"
-local ItemTable = {}
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local Pickups = Workspace.Pickups
 while true do
@@ -18,7 +17,9 @@ while true do
     task.wait()
 end
 
---[[for Index, Object in next, Pickups:GetChildren() do
+--[[
+local ItemTable = {}
+for Index, Object in next, Pickups:GetChildren() do
     if Object:IsA("MeshPart") and string.find(Object.Name:lower(),ItemName:lower()) and not table.find(ItemTable,Object) then
         table.insert(ItemTable,Object)
     end
