@@ -229,7 +229,7 @@ local defaults; do
                     TextStrokeColor3 = library.options.strokecolor;
                     library:Create('TextButton', {
                         
-                        Text = (library.options.toggledisplay == 'Check' and (location[flag] and "rbxassetid://13887341350" or "") or '');
+                        Text = (library.options.toggledisplay == 'Check' and (location[flag] and utf8.char(10003) or "") or '');
                         Font = library.options.font;
                         TextSize = library.options.fontsize;
                         Name = 'Checkmark';
@@ -249,7 +249,7 @@ local defaults; do
                 location[flag] = (not location[flag]);
                 callback(location[flag])
                 if library.options.toggledisplay == 'Check' then
-                    check:FindFirstChild(name).Checkmark.Text = location[flag] and "rbxassetid://13887341350" or "";
+                    check:FindFirstChild(name).Checkmark.Text = location[flag] and utf8.char(10003) or "";
                 elseif library.options.toggledisplay == 'Fill' then
                     check:FindFirstChild(name).Checkmark.BackgroundColor3 = location[flag] and Color3.fromRGB(20,148,90) or Color3.fromRGB(175,35,35)
                 end
@@ -268,7 +268,7 @@ local defaults; do
                     location[flag] = b;
                     callback(location[flag])
                     if library.options.toggledisplay == 'Check' then
-                        check:FindFirstChild(name).Checkmark.Text = location[flag] and "rbxassetid://13887341350" or "";
+                        check:FindFirstChild(name).Checkmark.Text = location[flag] and utf8.char(10003) or "";
                     elseif library.options.toggledisplay == 'Fill' then
                         check:FindFirstChild(name).Checkmark.BackgroundColor3 = location[flag] and Color3.fromRGB(20,148,90) or Color3.fromRGB(175,35,35)
                     end
