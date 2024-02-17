@@ -217,7 +217,7 @@ local defaults; do
                 LayoutOrder = self:GetOrder();
                 library:Create('TextLabel', {
                     Name = name;
-                    Text = "\r" .. name;
+                    Text = name;
                     BackgroundTransparency = 1;
                     TextColor3 = library.options.textcolor;
                     Position = UDim2.new(0, 5, 0, 0);
